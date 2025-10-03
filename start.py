@@ -81,3 +81,10 @@ sum=a+b
 print(sum)
 print(c+d)
 
+#Input 
+
+name=input("Enter yout name : ")
+age=int(input("Enter yout age :"))
+weight=float(input("Enter your weight :"))
+print(name,age,weight)
+
