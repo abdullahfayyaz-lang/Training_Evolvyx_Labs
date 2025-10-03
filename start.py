@@ -70,3 +70,14 @@ print(val1 and val2)
 print(val1 or val2)
 print(not val1)
 
+
+#Type Converstion
+
+a=int("2")
+b=1
+c=str(b)
+d="ok"
+sum=a+b
+print(sum)
+print(c+d)
+
