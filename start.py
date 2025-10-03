@@ -13,7 +13,33 @@ print(type(age))
 print(type(speed))
 print(type(Software_Engineer))
 
+
 a=10
 b=500
 sum=a+b
 print("The sum of a and b is:",sum)
+
+
+#operators in python
+##Arithmetic (+-/*%**)
+a=10
+b=500
+sum=a+b
+dif=a-b
+mul=a*b
+div=b/a
+mod=b%a
+print("a+b",sum)
+print("a-b",dif)
+print("a*b",mul)
+print("b/a",div)
+print("b%a",mod)
+print("b^a",b**a)
+
+##Comparison (==,!=,<,>,<=,>=)
+print(a==b)
+print(a!=b)
+print(a<b)
+print(a>b)
+print(a<=b)
+print(a>=b)
