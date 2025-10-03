@@ -43,3 +43,30 @@ print(a<b)
 print(a>b)
 print(a<=b)
 print(a>=b)
+
+##Assignment (=,+=,-=,*=,)
+num=10
+print(num)
+num+=10
+print(num)
+num-=1
+print(num)
+num*=10
+print(num)
+num/=2
+print(num)
+num**=2
+print(num)
+num%=2
+print(num)
+
+
+##Logical Operator(And,Or,Not)
+
+val1=True
+val2=False
+
+print(val1 and val2)
+print(val1 or val2)
+print(not val1)
+
