@@ -24,7 +24,7 @@ class Account:
         self.balance=balance
 
     def print_balance(self):
-        print("Your acount blance :",self.balance)
+        print("Your acount blance :",sel f.balance)
 
     def credit(self,amount):
         self.balance+=amount

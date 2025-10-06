@@ -33,7 +33,7 @@ s0=Student("Cake",99)
 s1=Student("Enemy",100)
 s2=Student("Owi",89)
 s3=Student("Abdullah",89)
-# print(s1.name)
+#print(s1.name)
 # print(s1.University_name)
 # print(s3.name)
 # print(s2.name)
@@ -75,3 +75,26 @@ class Car:
         self.clutch=True
         self.acc=True
         print("Car started....")
+
+
+#del keyword is use to delete objects or objects attribute
+
+
+# print(s1.name)
+# del s1
+
+# print(s1.name)
+
+
+##private attribute & methods are meant to be only used within the class and are not accessible outside the class
+####__ are placed before the class meber to whom we want to make private
+
+class Account:
+    def __init__(self,acc_no,acc_pass):
+        self.acc_no=acc_no
+        self.__acc_pass=acc_pass
+
+
+
+acc1=Account(1,124)
+# print(acc1.__acc_pass)#will not print this
