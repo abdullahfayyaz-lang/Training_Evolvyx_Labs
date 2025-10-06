@@ -33,13 +33,45 @@ s0=Student("Cake",99)
 s1=Student("Enemy",100)
 s2=Student("Owi",89)
 s3=Student("Abdullah",89)
-print(s1.name)
-print(s1.University_name)
-print(s3.name)
-print(s2.name)
-print(s0.name)
-s1.hello()
-print(s1.get_marks())
-s1.set_marks(98)
-print(s1.get_marks())
-s1.welcome()
+# print(s1.name)
+# print(s1.University_name)
+# print(s3.name)
+# print(s2.name)
+# print(s0.name)
+# s1.hello()
+# print(s1.get_marks())
+# s1.set_marks(98)
+# print(s1.get_marks())
+# s1.welcome()
+
+
+##Abstraction :
+###Example
+class Car:
+    def __init__(self):
+        self.acc=False
+        self.brk=False
+        self.clutch=False
+
+    def start(self):
+        self.clutch=True
+        self.acc=True
+        print("Car started....")
+    
+
+car1=Car()
+car1.start()#starts only prints required info 
+
+##Encapsulation:Wrapping dta and fuctions into a single unit
+###Example
+
+class Car:
+    def __init__(self):
+        self.acc=False
+        self.brk=False
+        self.clutch=False
+
+    def start(self):
+        self.clutch=True
+        self.acc=True
+        print("Car started....")

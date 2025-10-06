@@ -13,6 +13,30 @@ class Student:
 
 
 
-s1=Student("Abdullah",100,98,78)
+# s1=Student("Abdullah",100,98,78)
 
-s1.print_average()
+# s1.print_average()
+
+
+class Account:
+    def __init__(self,acc_no,balance):
+        self.acc_no=acc_no
+        self.balance=balance
+
+    def print_balance(self):
+        print("Your acount blance :",self.balance)
+
+    def credit(self,amount):
+        self.balance+=amount
+
+    def debit(self,amount):
+        self.balance-=amount
+
+
+a1=Account(1,10000)
+a1.print_balance()
+
+a1.credit(1000)
+a1.print_balance()
+a1.debit(1000)
+a1.print_balance()
