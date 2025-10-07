@@ -2,7 +2,11 @@ from django.shortcuts import render
 from django.http import HttpResponse
 # Create your views here.
 def index(request):
-    return HttpResponse("This is homepage")
+    context={#its used to extract data from models and then pass it to templates
+        "variable":"Enemy is on the website"
+    }
+    return render(request,"index.html",context)
+#   return HttpResponse("This is homepage")
 
 def about(request):
     return HttpResponse("This is aboutpage")
