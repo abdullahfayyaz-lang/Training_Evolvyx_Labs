@@ -1,0 +1,6 @@
+In Django, static files are the non-dynamic assets that are essential for the front-end of a web application. These files are typically served directly to the client's browser without any server-side processing.
+Common examples of static files include: 
+CSS files: These define the visual styling and layout of web pages, controlling elements like fonts, colors, and spacing.
+JavaScript files: These add interactivity and dynamic behavior to web pages, such as form validation, animations, and content updates.
+Images: Graphics, photos, and icons used to enhance the visual appeal and user experience.
+Fonts: Custom typefaces used for branding or design purposes.
