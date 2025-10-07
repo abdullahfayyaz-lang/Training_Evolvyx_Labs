@@ -4,3 +4,25 @@ CSS files: These define the visual styling and layout of web pages, controlling 
 JavaScript files: These add interactivity and dynamic behavior to web pages, such as form validation, animations, and content updates.
 Images: Graphics, photos, and icons used to enhance the visual appeal and user experience.
 Fonts: Custom typefaces used for branding or design purposes.
+
+
+Open the templates/template.html file and add the following:
+{% load static %}
+And:
+<link rel="stylesheet" href="{% static 'myfirst.css' %}">
+
+
+example.html
+
+{% load static %}
+<!DOCTYPE html>
+<html>
+<link rel="stylesheet" href="{% static 'myfirst.css' %}">
+<body>
+
+{% for x in fruits %}
+  <h1>{{ x }}</h1>
+{% endfor %}
+
+</body>
+</html>
