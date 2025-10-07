@@ -1,0 +1,2 @@
+For djaongo make sure you first create a new app inside the project and add the base url in yoour base app urls.py and also add app name in INSTALLED_APPS list in settings.py
+then create a urls.py in app(home) and add urls for that app there and map each url to a view and create a view in views.to for that

@@ -1,0 +1,52 @@
+Django Architecture: The MVT Pattern
+Django is based on MVT (Model-View-Template) architecture. MVT is a software design pattern for developing a web application. It's structure has the following three parts :
+
+1. Model: Acts as the data interface. It defines the structure of your data and is usually backed by a database (e.g., MySQL, PostgreSQL).
+2. View: A Python function or class that handles web requests. It interacts with the Model and renders a response, typically by passing data to a Template.
+3. Template: Contains static HTML mixed with Django’s templating syntax. Templates are used to display dynamic data on the web page.
+
+
+1. Model
+Handles the data and database layer.
+Defines the structure of the database tables (fields, relationships, etc.).
+Django models are Python classes that map to database tables.
+
+
+2. View
+Contains the business logic.
+Gets data from the Model, processes it, and sends it to the Template.
+Returns an HTTP response.
+
+
+3. Template
+Handles the presentation layer (HTML, CSS, JS).
+Displays the data passed from the View in a user-friendly way.
+
+
+->How MVT Works in Django
+User sends a request (e.g., /students/).
+URLconf (urls.py) routes the request to the correct View.
+The View interacts with the Model to fetch or modify data.
+The View passes that data to the Template.
+The Template renders HTML and returns it to the browser.
+
+
+MVT Workflow:
+User →middleware-> URL → View → Model → Template->middleware → Response → User
+
+
+Client (Browser)
+     ↓
+Middleware (Request Phase)
+     ↓
+URLconf (urls.py)
+     ↓
+View (views.py)
+     ↓
+Model (models.py)
+     ↓
+Template (HTML)
+     ↓
+Middleware (Response Phase)
+     ↓
+Response → Browser
