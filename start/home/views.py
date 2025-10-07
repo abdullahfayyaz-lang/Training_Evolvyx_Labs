@@ -4,6 +4,12 @@ from django.http import HttpResponse
 def index(request):
     return HttpResponse("This is homepage")
 
+def about(request):
+    return HttpResponse("This is aboutpage")
 
-def welcome(request):
-    return HttpResponse("Welcome to home")
+def services(request):
+    return HttpResponse("This is servicespage")
+
+def contact(request):
+    return HttpResponse("This is contactpage")
+
