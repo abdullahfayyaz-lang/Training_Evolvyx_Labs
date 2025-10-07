@@ -7,3 +7,11 @@ class Customer(models.Model):
 
     def __str__(self):
         return self.first_name + " " + self.last_name
+
+
+
+class Student(models.Model):
+    name=models.CharField(max_length=50)
+    student_id=models.IntegerField()
+    section=models.CharField(max_length=5)
+    degree=models.CharField(max_length=4)

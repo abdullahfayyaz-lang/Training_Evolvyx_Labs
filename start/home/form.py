@@ -1,6 +1,6 @@
 # forms.py
 from django import forms
-from .models import Customer
+from .models import Customer,Student
 class ContactForm(forms.Form):
     name = forms.CharField(max_length=100)
     email = forms.EmailField()
@@ -15,3 +15,8 @@ class CustomerForm(forms.ModelForm):
         fields = ['first_name', 'last_name']  # ✅ specify which fields to include
 
 
+
+class StudentForm(forms.ModelForm):
+    class Meta:
+        model=Student
+        fields=["name","student_id","section","degree"]
