@@ -1,0 +1,89 @@
+What is a QuerySet?
+
+A QuerySet represents a collection of database queries and results.
+You can think of it as a list of model objects fetched from the database — but it's lazy, meaning it doesn't actually hit the database until it's needed.
+
+Example:
+
+from home.models import Student
+
+students = Student.objects.all()  # returns a QuerySet
+
+⚙️ QuerySet Creation Methods
+Method	Description	Example
+.all()	Returns all objects.	Student.objects.all()
+.filter(**kwargs)	Returns objects matching given lookups.	Student.objects.filter(age__gte=18)
+.exclude(**kwargs)	Opposite of filter().	Student.objects.exclude(age__lt=18)
+.get(**kwargs)	Returns a single object; raises DoesNotExist or MultipleObjectsReturned.	Student.objects.get(id=1)
+.create(**kwargs)	Creates and saves a new object.	Student.objects.create(name="Ali", age=20)
+.get_or_create(defaults=None, **kwargs)	Gets an object or creates one if not found.	Student.objects.get_or_create(name="Ali")
+.update_or_create(defaults=None, **kwargs)	Updates if exists; creates if not.	Student.objects.update_or_create(id=1, defaults={'age':21})
+.bulk_create(objs)	Inserts multiple objects efficiently.	Student.objects.bulk_create([Student(name='A'), Student(name='B')])
+.in_bulk(id_list)	Returns a dict of objects keyed by IDs.	Student.objects.in_bulk([1,2,3])
+.delete()	Deletes objects in QuerySet.	Student.objects.filter(age__lt=18).delete()
+🔍 Filtering Lookups
+
+Common field lookups for filter() and exclude():
+
+Lookup	Meaning	Example
+exact	Exact match	name__exact='Ali'
+iexact	Case-insensitive match	name__iexact='ali'
+contains	Substring match	name__contains='Al'
+icontains	Case-insensitive substring	name__icontains='al'
+startswith, endswith	Prefix/suffix match	name__startswith='A'
+gt, gte, lt, lte	Greater/Less comparisons	age__gte=18
+in	Value in list	id__in=[1,2,3]
+range	Between two values	age__range=(18,25)
+isnull	NULL check	marks__isnull=True
+regex, iregex	Regular expression match	name__regex=r'^A'
+🧩 QuerySet Refinement Methods
+Method	Description	Example
+.order_by(*fields)	Sorts results.	Student.objects.order_by('name')
+.reverse()	Reverses the order.	Student.objects.order_by('name').reverse()
+.distinct()	Removes duplicates.	Student.objects.distinct()
+.values(*fields)	Returns dicts instead of model instances.	Student.objects.values('name', 'age')
+.values_list(*fields)	Returns tuples instead of dicts.	Student.objects.values_list('name', 'age')
+.only(*fields)	Loads only selected fields.	Student.objects.only('name')
+.defer(*fields)	Defers loading of specific fields.	Student.objects.defer('bio')
+.select_related(*fields)	Follows foreign keys (for one-to-one or many-to-one).	Book.objects.select_related('author')
+.prefetch_related(*fields)	Prefetches many-to-many or reverse relationships.	Author.objects.prefetch_related('books')
+.annotate()	Adds aggregation data.	Student.objects.annotate(total_marks=Sum('marks'))
+.aggregate()	Returns summary values.	Student.objects.aggregate(Avg('marks'))
+🧮 Aggregation Functions
+
+From django.db.models:
+
+from django.db.models import Count, Sum, Avg, Max, Min
+
+Function	Example
+Count()	Student.objects.aggregate(total=Count('id'))
+Sum()	Student.objects.aggregate(total=Sum('marks'))
+Avg()	Student.objects.aggregate(average=Avg('marks'))
+Max()	Student.objects.aggregate(max_score=Max('marks'))
+Min()	Student.objects.aggregate(min_score=Min('marks'))
+📦 Combining QuerySets
+Operation	Description	Example
+union()	Combine without duplicates	q1.union(q2)
+intersection()	Common elements	q1.intersection(q2)
+difference()	Elements in q1 not in q2	q1.difference(q2)
+`	` (OR)	Combine with OR
+& (AND)	Combine with AND	Student.objects.filter(age__gte=18) & Student.objects.filter(city='Lahore')
+🧭 Evaluation (when QuerySets actually hit the DB)
+
+A QuerySet is lazy — it executes only when needed, for example:
+
+Iteration (for obj in queryset)
+
+Slicing (queryset[:5])
+
+Converting to list (list(queryset))
+
+Calling methods like .exists(), .count(), .first(), .last(), etc.
+
+🧱 QuerySet Evaluation Helpers
+Method	Description
+.count()	Returns total rows.
+.exists()	Checks if any record exists.
+.first() / .last()	Returns first/last record.
+.earliest(field_name) / .latest(field_name)	Based on field ordering.
+.none()	Returns an empty QuerySet.
