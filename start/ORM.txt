@@ -1,0 +1,28 @@
+Django's Object-Relational Mapping (ORM) is one of the key features that simplifies interaction with the database. It allows developers to define their database schema in Python classes and manage data without writing raw SQL queries. The Django ORM bridges the gap between Python objects and database tables, making it easy to create, retrieve, update, and delete data in the database.
+
+(insert data)
+variable=modelName(Model Attributes)
+variable.save
+
+->Retrieving Data with Django ORM
+1. Retrieving All Records:To retrieve all records from the Album model, we use the all() method:
+modelName.objects.all()->return all objects 
+2. Filtering Records: You can filter records based on specific conditions using the filter() method:
+modelName.objects.filter(Attribute="value")
+3. Excluding Records: The exclude() method allows you to retrieve all records except those that match a condition:
+modelName.objects.exclude(Attribute="value")
+4. Retrieving a Single Record: To retrieve a single object based on a unique field, use get(). Note that this will raise an exception if multiple objects match:
+modelName.objects.get(pk=3)
+->Updating Data with Django ORM
+1. Modifying an Existing Object: To update an existing record, first retrieve the object, modify its attributes, and then save it:
+>>> a = modelName.objects.get(pk=3)
+>>> a.Attribute = "Value"
+>>> a.save()
+2. Bulk Update: You can also update multiple objects at once using update():
+>>> modelName.objects.filter(Attribute="value").update(genre="Classic Rock")
+->Deleting Data with Django ORM
+1. Deleting a Single Record: To delete a specific record, first retrieve the object and then call the delete() method:
+>>> a = Album.objects.get(pk=2)
+>>> a.delete()
+2. Deleting Multiple Records: To delete multiple records at once, use filter() or exclude() combined with the delete() method:
+>>> Album.objects.filter(genre="Pop").delete()
