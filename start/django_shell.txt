@@ -1,0 +1,85 @@
+What is Django Shell?
+Django shell is a Python shell that automatically imports Django settings and initializes the project environment.
+
+For django shell plus use the following
+pip install django-extensions
+also add 'django_extensions' to INSTALLED_APPS in settings.py.
+
+start django shell
+python manage.py shell
+
+
+Common Commands in Django Shell
+Once inside the shell (python manage.py shell), you can:
+1. Import your models
+from home.models import Student
+2. Create an object
+s = Student(name="Ali", age=22, course="Python")
+s.save()
+3. Retrieve all objects
+Student.objects.all()
+4. Filter objects
+Student.objects.filter(age=22)
+5. Get a single object
+Student.objects.get(id=1)
+6. Update an object
+s = Student.objects.get(id=1)
+s.name = "Abdullah"
+s.save()
+7. Delete an object
+s = Student.objects.get(id=1)
+s.delete()
+8. Count objects
+Student.objects.count()
+9. Check available model methods
+dir(Student)
+10. Use Django ORM to test queries
+Student.objects.filter(course__icontains="python")
+
+
+5. Migrations & Schema Info
+python manage.py makemigrations
+python manage.py migrate
+python manage.py showmigrations
+python manage.py sqlmigrate app_name 0001
+
+
+
+from django.core.management import call_command
+call_command('showmigrations')
+
+
+7. Inspect Settings & Configuration
+from django.conf import settings
+settings.DEBUG
+settings.INSTALLED_APPS
+settings.DATABASES
+
+
+9. Raw SQL Queries
+Student.objects.raw('SELECT * FROM home_student WHERE age > 20')
+
+
+10. Utility Commands
+# Clear all objects
+Student.objects.all().delete()
+
+# Reload model data
+import importlib
+importlib.reload(Student)
+
+# Exit the shell
+exit()
+
+__________________________________________________________
+Command	Description
+----------------------------------------------------------
+python manage.py runserver	Start development server
+python manage.py createsuperuser	Create admin user
+python manage.py collectstatic	Collect static files
+python manage.py check	Check project for errors
+python manage.py flush	Delete all data from database
+python manage.py dbshell	Open database shell
+python manage.py dumpdata	Export data as JSON
+python manage.py loaddata	Load data from JSON
+__________________________________________________________
