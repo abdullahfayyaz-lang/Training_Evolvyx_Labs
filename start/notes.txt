@@ -26,3 +26,95 @@ example.html
 
 </body>
 </html>
+
+
+
+
+
+
+Django Settings:->with docs for django settings description
+A Django settings file contains all the configuration of your Django installation. This document explains how settings work and which settings are available
+https://docs.djangoproject.com/en/4.2/ref/settings/
+https://docs.djangoproject.com/en/5.2/topics/settings/
+
+The command python manage.py diffsettings displays differences between the current settings file and Django’s default settings.
+
+
+In your Django apps, use settings by importing the object django.conf.settings. Example:
+
+from django.conf import settings
+
+if settings.DEBUG:
+    # Do something
+    ...
+Note that django.conf.settings isn’t a module – it’s an object. So importing individual settings is not possible:
+
+from django.conf.settings import DEBUG  # This won't work.
+
+
+Settings should not be changed on runtime. dont do the following in views
+from django.conf import settings
+
+settings.DEBUG = True  # Don't do this!
+
+as settings file do containes sensitive information like database passwords so make sure you limits it access
+
+Creating your own settings¶
+There’s nothing stopping you from creating your own settings, for your own Django apps, but follow these guidelines:
+
+Setting names must be all uppercase.
+
+Don’t reinvent an already-existing setting.
+
+For settings that are sequences, Django itself uses lists, but this is only a convention.
+
+Using settings without setting DJANGO_SETTINGS_MODULE¶
+In some cases, you might want to bypass the DJANGO_SETTINGS_MODULE environment variable. For example, if you’re using the template system by itself, you likely don’t want to have to set up an environment variable pointing to a settings module.
+
+In these cases, you can configure Django’s settings manually. Do this by calling:
+
+django.conf.settings.configure(default_settings, **settings)¶
+Example:
+
+from django.conf import settings
+
+settings.configure(DEBUG=True)Using settings without setting DJANGO_SETTINGS_MODULE¶
+In some cases, you might want to bypass the DJANGO_SETTINGS_MODULE environment variable. For example, if you’re using the template system by itself, you likely don’t want to have to set up an environment variable pointing to a settings module.
+
+In these cases, you can configure Django’s settings manually. Do this by calling:
+
+django.conf.settings.configure(default_settings, **settings)¶
+Example:
+
+from django.conf import settings
+
+settings.configure(DEBUG=True)
+
+Either configure() or DJANGO_SETTINGS_MODULE is required¶
+If you’re not setting the DJANGO_SETTINGS_MODULE environment variable, you must call configure() at some point before using any code that reads settings.
+
+If you don’t set DJANGO_SETTINGS_MODULE and don’t call configure(), Django will raise an ImportError exception the first time a setting is accessed.
+
+If you set DJANGO_SETTINGS_MODULE, access settings values somehow, then call configure(), Django will raise a RuntimeError indicating that settings have already been configured. There is a property for this purpose:
+django.conf.settings.configured¶
+For example:
+
+from django.conf import settings
+
+if not settings.configured:
+    settings.configure(myapp_defaults, DEBUG=True)
+Calling django.setup() is required for “standalone” Django usage¶
+If you’re using components of Django “standalone” – for example, writing a Python script which loads some Django templates and renders them, or uses the ORM to fetch some data – there’s one more step you’ll need in addition to configuring settings.
+
+After you’ve either set DJANGO_SETTINGS_MODULE or called configure(), you’ll need to call django.setup() to load your settings and populate Django’s application registry. For example:
+
+import django
+from django.conf import settings
+from myapp import myapp_defaults
+
+settings.configure(default_settings=myapp_defaults, DEBUG=True)
+django.setup()
+
+# Now this script or any imported module can use any part of Django it needs.
+from myapp import models
+Note that calling django.setup() is only necessary if your code is truly standalone. When invoked by your web server, or through django-admin, Django will handle this for you.
