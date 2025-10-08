@@ -63,10 +63,13 @@ def student_view(request):
         if form.is_valid():
             form.save()
             success_message = "Student added successfully!"
-            form = StudentForm() 
-            context={'form': form, 'success_message': success_message} 
+            # Reset the form after saving
+            form = StudentForm()
+            context = {
+                'form': form,
+                'success_message': success_message
+            }
             return render(request, 'student_form.html', context)
-
     else:
         form = StudentForm()
 
