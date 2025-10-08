@@ -1,0 +1,113 @@
+🧠 1. Basic Building Blocks
+
+Most complex queries are built using:
+
+Q objects → for OR, AND, NOT conditions
+
+F expressions → for comparing fields with each other
+
+annotate() and aggregate() → for aggregations
+
+Subquery and OuterRef → for nested queries
+
+select_related() and prefetch_related() → for query optimization
+
+values() and values_list() → for dictionary or tuple results
+
+⚙️ 2. Using Q objects (Complex Filtering)
+from django.db.models import Q
+from home.models import Student
+
+# Students with marks > 80 OR name starts with 'A'
+students = Student.objects.filter(Q(marks__gt=80) | Q(name__startswith='A'))
+
+# Students with marks > 80 AND not named 'Ali'
+students = Student.objects.filter(Q(marks__gt=80) & ~Q(name='Ali'))
+
+
+👉 Q objects let you combine filters using | (OR), & (AND), and ~ (NOT) — similar to SQL logic.
+
+⚖️ 3. Using F expressions (Field-to-Field Comparison)
+from django.db.models import F
+from home.models import Employee
+
+# Employees where bonus is greater than salary
+Employee.objects.filter(bonus__gt=F('salary'))
+
+# Increase all employees’ salary by 10%
+Employee.objects.update(salary=F('salary') * 1.10)
+
+
+👉 F lets you compare or update using field values, not constants.
+
+📊 4. Aggregation and Annotation
+from django.db.models import Avg, Count, Sum, Max, Min
+from home.models import Order
+
+# Average order price
+Order.objects.aggregate(Avg('price'))
+
+# Count orders per customer
+Order.objects.values('customer__name').annotate(order_count=Count('id'))
+
+# Total revenue per month
+Order.objects.annotate(total=Sum('price'))
+
+
+👉 annotate() adds a computed field to each record,
+aggregate() returns a summary dictionary.
+
+🔁 5. Subquery and OuterRef (Nested Queries)
+from django.db.models import Subquery, OuterRef
+from home.models import Student, Exam
+
+latest_exam = Exam.objects.filter(student=OuterRef('pk')).order_by('-date')
+
+# Attach latest exam score for each student
+Student.objects.annotate(latest_score=Subquery(latest_exam.values('score')[:1]))
+
+
+👉 Similar to a SQL subquery — used when you need data from related tables dynamically.
+
+🚀 6. select_related() vs prefetch_related()
+# select_related → for ForeignKey (joins in one query)
+students = Student.objects.select_related('school').all()
+
+# prefetch_related → for ManyToMany or reverse ForeignKey
+students = Student.objects.prefetch_related('courses').all()
+
+
+👉 Reduces the number of SQL queries — improves performance.
+
+🧮 7. Complex chaining
+
+You can chain all these together:
+
+Student.objects.filter(
+    Q(marks__gte=70) | Q(grade='A'),
+    school__city='Lahore'
+).annotate(
+    total_marks=F('marks') + F('bonus')
+).filter(
+    total_marks__gt=90
+)
+
+🧩 8. Raw SQL (when ORM can’t handle it)
+Student.objects.raw('SELECT * FROM home_student WHERE marks > %s', [80])
+
+
+👉 Use sparingly — ORM handles most cases cleanly.
+
+💡 Example (Real Case)
+
+Find all authors who have written more than 3 published books and have average rating > 4.5:
+
+from django.db.models import Count, Avg
+
+Author.objects.annotate(
+    total_books=Count('book'),
+    avg_rating=Avg('book__rating')
+).filter(
+    total_books__gt=3,
+    avg_rating__gt=4.5
+)
