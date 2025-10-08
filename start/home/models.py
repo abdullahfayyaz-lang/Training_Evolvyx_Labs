@@ -15,3 +15,9 @@ class Student(models.Model):
     student_id=models.IntegerField()
     section=models.CharField(max_length=5)
     degree=models.CharField(max_length=4)
+
+
+class Author(models.Model):
+    name = models.CharField(max_length=100)
+    title = models.CharField(max_length=3)
+    birth_date = models.DateField(blank=True, null=True)

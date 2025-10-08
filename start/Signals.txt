@@ -1,0 +1,9 @@
+Django Signals:
+Signals are a mechanism for decoupled communication within a Django application. They allow certain "senders" to notify a set of "receivers" when specific events occur, without requiring direct dependencies between the components. This promotes a loosely coupled architecture, enhancing modularity and extensibility. 
+How they work:
+Sender: A component dispatches a signal when an event happens (e.g., a model is saved, a user logs in).
+Receiver: A function or method is connected to a specific signal, and it executes when that signal is dispatched.
+Use cases:
+Performing actions before or after model operations (e.g., pre_save, post_save).
+Notifying other parts of the application about user authentication events.
+Integrating with third-party apps by listening to their signals.
