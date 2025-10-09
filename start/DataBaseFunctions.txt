@@ -1,0 +1,350 @@
+# 🧠 Django Database Functions Cheat Sheet
+
+---
+
+## 🔹 STRING FUNCTIONS
+
+| Function                             | Description                    | Example                                         |
+| ------------------------------------ | ------------------------------ | ----------------------------------------------- |
+| **Lower()**                          | Converts text to lowercase     | `Lower('title')`                                |
+| **Upper()**                          | Converts text to uppercase     | `Upper('name')`                                 |
+| **Length()**                         | Returns string length          | `Length('name')`                                |
+| **Concat()**                         | Concatenates fields or strings | `Concat('first_name', Value(' '), 'last_name')` |
+| **Substring()**                      | Extracts a substring           | `Substring('title', 1, 5)`                      |
+| **Replace()**                        | Replaces part of a string      | `Replace('title', Value('old'), Value('new'))`  |
+| **Trim()**, **LTrim()**, **RTrim()** | Removes whitespace             | `Trim('name')`                                  |
+
+---
+
+## 🕒 DATE & TIME FUNCTIONS
+
+| Function                 | Description                 | Example                                     |
+| ------------------------ | --------------------------- | ------------------------------------------- |
+| **Now()**                | Current timestamp           | `Book.objects.filter(created_at__lt=Now())` |
+| **ExtractYear()**        | Extracts year               | `ExtractYear('published_date')`             |
+| **ExtractMonth()**       | Extracts month              | `ExtractMonth('published_date')`            |
+| **TruncDate()**          | Truncates datetime to date  | `TruncDate('created_at')`                   |
+| **TruncMonth()**         | Truncates datetime to month | `TruncMonth('created_at')`                  |
+| **Age()** *(PostgreSQL)* | Difference in age           | `Age(Now(), 'dob')`                         |
+
+---
+
+## ➕ MATH FUNCTIONS
+
+| Function    | Description       | Example              |
+| ----------- | ----------------- | -------------------- |
+| **Abs()**   | Absolute value    | `Abs('age')`         |
+| **Round()** | Round number      | `Round('price', 2)`  |
+| **Ceil()**  | Ceiling value     | `Ceil('pages')`      |
+| **Floor()** | Floor value       | `Floor('pages')`     |
+| **Power()** | Power of a number | `Power('rating', 2)` |
+| **Sqrt()**  | Square root       | `Sqrt('rating')`     |
+
+---
+
+## ⚙️ CONDITIONAL & NULL HANDLING
+
+| Function       | Description                      | Example                             |
+| -------------- | -------------------------------- | ----------------------------------- |
+| **Coalesce()** | Returns first non-null value     | `Coalesce('title', 'backup_title')` |
+| **Greatest()** | Returns greatest value           | `Greatest('rating', 'popularity')`  |
+| **Least()**    | Returns smallest value           | `Least('rating', 'popularity')`     |
+| **NullIf()**   | Returns NULL if values are equal | `NullIf('title', Value('Unknown'))` |
+
+---
+
+## 📊 AGGREGATIONS
+
+| Function          | Description        | Example                       |
+| ----------------- | ------------------ | ----------------------------- |
+| **Count()**       | Count records      | `Count('id')`                 |
+| **Sum()**         | Sum of values      | `Sum('price')`                |
+| **Avg()**         | Average value      | `Avg('price')`                |
+| **Min() / Max()** | Minimum or Maximum | `Min('price') / Max('price')` |
+
+---
+
+## 🪟 WINDOW FUNCTIONS (PostgreSQL only)
+
+| Function           | Description                        | Example                                           |
+| ------------------ | ---------------------------------- | ------------------------------------------------- |
+| **RowNumber()**    | Adds row numbering                 | `Window(RowNumber(), order_by=F('price').desc())` |
+| **Rank()**         | Ranking function                   | `Window(Rank(), order_by='rating')`               |
+| **DenseRank()**    | Ranking without gaps               | `Window(DenseRank(), order_by='rating')`          |
+| **Lag() / Lead()** | Access previous or next row values | `Window(Lag('rating'), order_by='id')`            |
+
+---
+
+## 🧩 EXAMPLES
+
+### 1️⃣ Combine author name and age:
+
+```python
+Author.objects.annotate(
+    info=Concat('name', Value(' ('), 'age', Value(' years)'))
+)
+```
+
+### 2️⃣ Get all books published this year:
+
+```python
+from django.utils.timezone import now
+Book.objects.filter(published_date__year=now().year)
+```
+
+### 3️⃣ Count books per publication month:
+
+```python
+Book.objects.annotate(
+    month=TruncMonth('published_date')
+).values('month').annotate(total=Count('id'))
+```
+
+### 4️⃣ Chain multiple functions:
+
+```python
+Book.objects.annotate(
+    short_title=Upper(Substring('title', 1, 5))
+)
+```
+
+---
+
+## ⚠️ NOTES
+
+* Some functions (like `Age()`, `Window()`, `JSON*`) work **only in PostgreSQL**.
+* Always import from:
+
+  ```python
+  from django.db.models.functions import *
+  from django.db.models import F, Value, Count, Sum, Avg
+  ```
+* Functions can be used in `.annotate()`, `.aggregate()`, `.filter()`, and `.order_by()`.
+
+
+Cast¶
+class Cast(expression, output_field)[source]¶
+Forces the result type of expression to be the one from output_field.
+
+Usage example:
+
+>>> from django.db.models import FloatField
+>>> from django.db.models.functions import Cast
+>>> Author.objects.create(age=25, name="Margaret Smith")
+>>> author = Author.objects.annotate(
+...     age_as_float=Cast("age", output_field=FloatField()),
+... ).get()
+>>> print(author.age_as_float)
+25.0
+
+
+
+
+Coalesce¶
+class Coalesce(*expressions, **extra)[source]¶
+Accepts a list of at least two field names or expressions and returns the first non-null value (note that an empty string is not considered a null value). Each argument must be of a similar type, so mixing text and numbers will result in a database error
+
+Collate¶
+class Collate(expression, collation)[source]¶
+Takes an expression and a collation name to query against.
+
+For example, to filter case-insensitively in SQLite:
+
+>>> Author.objects.filter(name=Collate(Value("john"), "nocase"))
+<QuerySet [<Author: John>, <Author: john>]>
+It can also be used when ordering, for example with PostgreSQL:
+
+>>> Author.objects.order_by(Collate("name", "et-x-icu"))
+<QuerySet [<Author: Ursula>, <Author: Veronika>, <Author: Ülle>]>
+
+
+Greatest¶
+class Greatest(*expressions, **extra)[source]¶
+Accepts a list of at least two field names or expressions and returns the greatest value. Each argument must be of a similar type, so mixing text and numbers will result in a database error.
+
+Usage example:
+
+class Blog(models.Model):
+    body = models.TextField()
+    modified = models.DateTimeField(auto_now=True)
+
+
+class Comment(models.Model):
+    body = models.TextField()
+    modified = models.DateTimeField(auto_now=True)
+    blog = models.ForeignKey(Blog, on_delete=models.CASCADE)
+>>> from django.db.models.functions import Greatest
+>>> blog = Blog.objects.create(body="Greatest is the best.")
+>>> comment = Comment.objects.create(body="No, Least is better.", blog=blog)
+>>> comments = Comment.objects.annotate(last_updated=Greatest("modified", "blog__modified"))
+>>> annotated_comment = comments.get()
+
+
+Least¶
+class Least(*expressions, **extra)[source]¶
+Accepts a list of at least two field names or expressions and returns the least value. Each argument must be of a similar type, so mixing text and numbers will result in a database error.
+
+NullIf¶
+class NullIf(expression1, expression2)[source]¶
+Accepts two expressions and returns None if they are equal, otherwise returns expression1.
+Example 1: Return NULL if field equals a value
+from django.db.models import Value
+from django.db.models.functions import NullIf
+
+Author.objects.annotate(
+    name_clean=NullIf('name', Value('Unknown'))
+)
+Explanation:
+If name == "Unknown", Django will return NULL for that row;
+otherwise, it returns the actual name.
+
+
+Date functions¶
+We’ll be using the following model in examples of each function:
+
+class Experiment(models.Model):
+    start_datetime = models.DateTimeField()
+    start_date = models.DateField(null=True, blank=True)
+    start_time = models.TimeField(null=True, blank=True)
+    end_datetime = models.DateTimeField(null=True, blank=True)
+    end_date = models.DateField(null=True, blank=True)
+    end_time = models.TimeField(null=True, blank=True)
+
+
+Extract¶
+class Extract(expression, lookup_name=None, tzinfo=None, **extra)[source]¶
+Extracts a component of a date as a number.
+
+Takes an expression representing a DateField, DateTimeField, TimeField, or DurationField and a lookup_name, and returns the part of the date referenced by lookup_name as an IntegerField. Django usually uses the databases’ extract function, so you may use any lookup_name that your database supports. A tzinfo subclass, usually provided by zoneinfo, can be passed to extract a value in a specific timezone.
+
+Given the datetime 2015-06-15 23:30:01.000321+00:00, the built-in lookup_names return:
+
+“year”: 2015
+
+“iso_year”: 2015
+
+“quarter”: 2
+
+“month”: 6
+
+“day”: 15
+
+“week”: 25
+
+“week_day”: 2
+
+“iso_week_day”: 1
+
+“hour”: 23
+
+“minute”: 30
+
+“second”: 1
+
+If a different timezone like Australia/Melbourne is active in Django, then the datetime is converted to the timezone before the value is extracted. The timezone offset for Melbourne in the example date above is +10:00. The values returned when this timezone is active will be the same as above except for:
+
+“day”: 16
+
+“week_day”: 3
+
+“iso_week_day”: 2
+
+“hour”: 9
+
+DateField extracts¶
+class ExtractYear(expression, tzinfo=None, **extra)[source]¶
+lookup_name = 'year'
+class ExtractIsoYear(expression, tzinfo=None, **extra)[source]¶
+Returns the ISO-8601 week-numbering year.
+
+lookup_name = 'iso_year'
+class ExtractMonth(expression, tzinfo=None, **extra)[source]¶
+lookup_name = 'month'
+class ExtractDay(expression, tzinfo=None, **extra)[source]¶
+lookup_name = 'day'
+class ExtractWeekDay(expression, tzinfo=None, **extra)[source]¶
+lookup_name = 'week_day'
+class ExtractIsoWeekDay(expression, tzinfo=None, **extra)[source]¶
+Returns the ISO-8601 week day with day 1 being Monday and day 7 being Sunday.
+
+lookup_name = 'iso_week_day'
+class ExtractWeek(expression, tzinfo=None, **extra)[source]¶
+lookup_name = 'week'
+class ExtractQuarter(expression, tzinfo=None, **extra)[source]¶
+lookup_name = 'quarter'
+
+Now¶
+class Now[source]¶
+Returns the database server’s current date and time when the query is executed, typically using the SQL CURRENT_TIMESTAMP.
+
+
+Trunc¶
+class Trunc(expression, kind, output_field=None, tzinfo=None, **extra)[source]¶
+Truncates a date up to a significant component.
+
+When you only care if something happened in a particular year, hour, or day, but not the exact second, then Trunc (and its subclasses) can be useful to filter or aggregate your data. For example, you can use Trunc to calculate the number of sales per day.
+
+Trunc takes a single expression, representing a DateField, TimeField, or DateTimeField, a kind representing a date or time part, and an output_field that’s either DateTimeField(), TimeField(), or DateField(). It returns a datetime, date, or time depending on output_field, with fields up to kind set to their minimum value. If output_field is omitted, it will default to the output_field of expression. A tzinfo subclass, usually provided by zoneinfo, can be passed to truncate a value in a specific timezone.
+
+
+class JSONArray(*expressions)[source]¶
+Accepts a list of field names or expressions and returns a JSON array containing those values.
+
+Usage example:
+
+>>> from django.db.models import F
+>>> from django.db.models.functions import JSONArray, Lower
+>>> Author.objects.create(name="Margaret Smith", alias="msmith", age=25)
+>>> author = Author.objects.annotate(
+...     json_array=JSONArray(
+...         Lower("name"),
+...         "alias",
+...         F("age") * 2,
+...     )
+... ).get()
+>>> author.json_array
+['margaret smith', 'msmith', 50]
+
+>>> from django.db.models import F
+>>> from django.db.models.functions import JSONObject, Lower
+>>> Author.objects.create(name="Margaret Smith", alias="msmith", age=25)
+>>> author = Author.objects.annotate(
+...     json_object=JSONObject(
+...         name=Lower("name"),
+...         alias="alias",
+...         age=F("age") * 2,
+...     )
+... ).get()
+>>> author.json_object
+{'name': 'margaret smith', 'alias': 'msmith', 'age': 50}
+
+Left — Database Function in Django
+📘 Import
+from django.db.models.functions import Left
+
+🧠 Purpose
+
+Left() returns the first N characters of a text field or expression — directly in the database query (not in Python).
+
+It’s the ORM equivalent of the SQL LEFT() function.
+
+
+LPad() (Left Pad) pads the left side of a string or expression with a given fill character (or string) until the total length equals the specified value.
+
+It is equivalent to the SQL LPAD() function.
+
+⚙️ Syntax
+LPad(expression, length, fill_text=Value(' '), **extra)
+
+Parameter	Description
+expression	The field or text expression to pad (e.g., "name")
+length	The final length (integer or expression)
+fill_text	Optional string used to pad (default = ' ' space)
+**extra	Additional options (rarely used)
+
+Default (space) padding
+Author.objects.update(name=LPad("name", 10))
+
+
+Output example:
+"      John"
