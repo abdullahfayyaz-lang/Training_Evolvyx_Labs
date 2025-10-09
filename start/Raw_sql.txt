@@ -1,0 +1,109 @@
+
+---
+
+## 🧩 **Default Table Name Rule**
+
+By **default**, Django creates the database table name in the format:
+
+```
+<app_label>_<model_name>
+```
+
+* `app_label` → your Django app’s name (the one in `INSTALLED_APPS`).
+* `model_name` → your model’s class name, converted to **lowercase**.
+
+---
+
+### 🔍 Example
+
+If your app is named `home` and your model is:
+
+```python
+class Author(models.Model):
+    name = models.CharField(max_length=100)
+```
+
+Then the **table name** will be:
+
+```
+home_author
+```
+
+---
+
+### 🧱 For your models:
+
+| Model Name | Table Name    |
+| ---------- | ------------- |
+| `Author`   | `home_author` |
+| `Book`     | `home_book`   |
+| `Order`    | `home_order`  |
+
+✅ These are the exact table names you should use in raw SQL:
+
+```sql
+SELECT * FROM home_author;
+SELECT * FROM home_book;
+SELECT * FROM home_order;
+```
+
+---
+
+## ⚙️ **Customizing Table Name**
+
+You can override this default using the `db_table` option in the model’s `Meta` class.
+
+```python
+class Author(models.Model):
+    name = models.CharField(max_length=100)
+
+    class Meta:
+        db_table = "authors_table"  # custom table name
+```
+
+This will create (or map to) the database table named `authors_table` instead of `home_author`.
+
+---
+
+## 🧠 **Finding the Actual Table Name**
+
+You can check what Django thinks the table name is:
+
+```python
+>>> from home.models import Author
+>>> Author._meta.db_table
+'home_author'
+```
+
+---
+
+## 🗂️ **Related Tables (Foreign Keys, ManyToMany)**
+
+Django automatically generates related table names too:
+
+* For a **ForeignKey**, the column name is `<related_model>_id`
+
+  ```sql
+  SELECT author_id FROM home_book;
+  ```
+
+* For a **ManyToManyField**, Django creates an **auto-generated join table** named:
+
+  ```
+  <app_label>_<model1>_<model2>
+  ```
+
+  unless you specify `db_table` inside the ManyToMany field.
+
+---
+
+## ✅ Summary
+
+| Element             | Default Format                         | Example (App = `home`) |
+| ------------------- | -------------------------------------- | ---------------------- |
+| Table name          | `appname_modelname`                    | `home_author`          |
+| Column (ForeignKey) | `<fieldname>_id`                       | `author_id`            |
+| ManyToMany table    | `appname_model1_model2`                | `home_book_author`     |
+| Override table name | `class Meta: db_table = "custom_name"` | —                      |
+
+---

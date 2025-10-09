@@ -50,7 +50,6 @@ class Book(models.Model):
             # Index for frequent ordering by published date
             Index(fields=['published_date']),
         ]
-
     def __str__(self):
         return f"{self.title} ({self.author.name})"
 
