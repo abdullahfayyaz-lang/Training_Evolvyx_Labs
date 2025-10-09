@@ -1,0 +1,131 @@
+1. What is a Model Manager?
+
+Every Django model has a default Manager called objects.
+
+MyModel.objects.all()
+
+
+👉 The Manager is the main entry point for all database operations — it controls how you query the database.
+
+You can create custom managers to:
+
+Add extra table-level functionality.
+
+Modify default queryset behavior (e.g., filter only active records).
+
+
+
+Model managers are the entry to the model.
+__________________________________________________________________________________________________________________________________________________________________________
+In Django, a model manager is a class that provides an interface for working with a specific model. It is used to query the database and retrieve instances of the model. By default, Django automatically creates a manager for each model called objects, but you can also create custom managers.
+
+For example, you could create a custom manager for a model called “Book” that returns only books that are currently available in stock:
+
+from django.db import models
+
+class BookManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(in_stock=True)
+
+class Book(models.Model):
+    title = models.CharField(max_length=100)
+    in_stock = models.BooleanField()
+    objects = BookManager()
+In this example, the custom manager BookManager override the default manager objects and filter the queryset to return only the books which are in stock.
+__________________________________________________________________________________________________________________________________________________________________________
+
+Why use custom QuerySets?
+You can define methods that behave like filters or computations,
+and use them just like normal QuerySets, for example:
+Person.people.authors().filter(first_name__startswith="A")
+
+
+__________________________________________________________________________________________________________________________________________________________________________
+When you create a custom QuerySet and a custom Manager,
+you often need to duplicate methods like this:
+Before
+class PersonManager(models.Manager):
+    def authors(self):
+        return self.get_queryset().filter(role="A")
+But that’s repetitive — you already defined authors() in your QuerySet.
+✅ The from_queryset() method solves this by automatically adding all your QuerySet methods to the Manager.
+
+
+After
+class PersonManager(models.Manager.from_queryset(PersonQuerySet)):
+    pass
+That’s it!
+You don’t need to redefine .authors(), .editors(), etc. in your Manager — Django automatically copies them.
+
+__________________________________________________________________________________________________________________________________________________________________________
+
+Basic concepts
+
+In Django, when you inherit models, you can have:
+Abstract base classes
+from django.db import models
+
+class BaseManager(models.Manager):
+    def active(self):
+        return self.filter(is_active=True)
+class BaseModel(models.Model):
+    is_active = models.BooleanField(default=True)
+    # Custom manager
+    objects = BaseManager()
+    class Meta:
+        abstract = True  # no table created
+Then inherit it:
+
+class Student(BaseModel):
+    name = models.CharField(max_length=50)
+class Teacher(BaseModel):
+    subject = models.CharField(max_length=50)
+Both Student and Teacher now have:
+
+Student.objects.active()
+Teacher.objects.active()
+
+Multi-table inheritance
+Used when each model gets its own table, linked by a OneToOne relationship.
+Example:
+class Person(models.Model):
+    name = models.CharField(max_length=50)
+
+    objects = models.Manager()  # default manager
+class Student(Person):
+    roll_no = models.IntegerField()
+
+    students = models.Manager()
+✅ Notes:
+Student.objects.all() → returns only Student records
+Person.objects.all() → returns all base Person records
+Custom managers do not propagate automatically here
+(each model must define its own if needed).
+
+Proxy models
+Used to change the behavior (like manager or ordering) of an existing model without creating a new table.
+Example:
+class Person(models.Model):
+    name = models.CharField(max_length=50)
+    role = models.CharField(max_length=1, choices=[("A", "Author"), ("E", "Editor")])
+
+    objects = models.Manager()  # default manager
+class AuthorManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(role="A")
+class Author(Person):
+    objects = AuthorManager()
+
+    class Meta:
+        proxy = True
+✅ Behavior:
+Person.objects.all()    # all persons
+Author.objects.all()    # only persons with role="A"
+No new table created — only a new query behavior.
+Each behaves differently with custom managers.
+
+| Inheritance Type        | Creates DB Table? | Custom Manager Inherited? | Example Use                              |
+| ----------------------- | ----------------- | ------------------------- | ---------------------------------------- |
+| **Abstract Base Class** | ❌ No              | ✅ Yes                     | Shared logic/fields                      |
+| **Multi-table**         | ✅ Yes             | ❌ No                      | Specialized models                       |
+| **Proxy Model**         | ❌ No              | ✅ (overrides allowed)     | Change behavior (e.g., filter, ordering) |
