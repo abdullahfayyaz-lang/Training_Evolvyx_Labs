@@ -1,0 +1,361 @@
+## 🧩 What is a Transaction?
+
+A **transaction** is a block of database operations that are treated as a single unit:
+
+* If all succeed → changes are **committed**
+* If any fail → changes are **rolled back**
+
+---
+
+## ⚙️ Django Transaction Management
+
+Django provides the **`django.db.transaction`** module to manage transactions.
+
+### 1. **Autocommit Mode (Default)**
+
+By default, Django runs in **autocommit mode**, meaning every `save()`, `create()`, or `delete()` is **immediately committed** to the database.
+
+```python
+from myapp.models import Student
+
+# Each statement is auto-committed
+student = Student.objects.create(name="Ali")
+student.name = "Ahmed"
+student.save()  # committed instantly
+```
+
+---
+
+### 2. **`atomic()` – The Most Common Way**
+
+Use `transaction.atomic()` to wrap code in a **single transaction block**.
+
+```python
+from django.db import transaction
+
+def transfer_funds(sender, receiver, amount):
+    with transaction.atomic():
+        sender.balance -= amount
+        sender.save()
+        
+        # If this fails, all previous changes roll back
+        receiver.balance += amount
+        receiver.save()
+```
+
+If any exception occurs inside the block, Django **automatically rolls back** all operations inside it.
+
+---
+
+### 3. **Nesting Transactions (Savepoints)**
+
+You can **nest** atomic blocks — Django will create **savepoints** automatically.
+
+```python
+with transaction.atomic():  # outer transaction
+    do_something()
+    with transaction.atomic():  # inner savepoint
+        do_something_else()
+```
+
+If the inner block fails, only changes inside it are rolled back — the outer block remains valid.
+
+---
+
+### 4. **Manually Controlling Savepoints**
+
+You can explicitly create and control **savepoints**:
+
+```python
+from django.db import transaction, connection
+
+with transaction.atomic():
+    savepoint = transaction.savepoint()
+    try:
+        do_something()
+    except Exception:
+        transaction.savepoint_rollback(savepoint)
+    else:
+        transaction.savepoint_commit(savepoint)
+```
+
+---
+
+### 5. **`transaction.non_atomic_requests`**
+
+If a view doesn’t need transactions, you can disable them using this decorator.
+
+```python
+from django.db import transaction
+
+@transaction.non_atomic_requests
+def my_view(request):
+    # runs without a transaction
+    pass
+```
+
+---
+
+### 6. **`transaction.on_commit()`**
+
+Run code **after** a successful commit (useful for sending emails, async tasks, etc.)
+
+```python
+from django.db import transaction
+
+def create_order():
+    order = Order.objects.create(...)
+    transaction.on_commit(lambda: send_confirmation_email(order))
+```
+
+If the transaction rolls back, the email won’t be sent.
+
+---
+
+## 🧠 When to Use Transactions
+
+✅ Use `transaction.atomic()` when:
+
+* Performing multiple related DB updates.
+* Dealing with financial or critical data.
+* Using signals that depend on consistent state.
+
+❌ Don’t use transactions when:
+
+* Performing read-only queries.
+* Doing large batch operations that don’t depend on atomicity.
+
+---
+
+## 🧪 Example: Django View with Transaction
+
+```python
+from django.db import transaction
+from django.http import JsonResponse
+
+@transaction.atomic
+def process_payment(request):
+    try:
+        user = User.objects.get(id=request.POST['user_id'])
+        order = Order.objects.create(user=user, total=request.POST['amount'])
+        
+        payment = Payment.objects.create(order=order, status='paid')
+        
+        # if something fails, all above will rollback
+        return JsonResponse({'status': 'success'})
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=400)
+```
+
+---
+
+## 📚 Summary Table
+
+| Function / Decorator               | Purpose                               |
+| ---------------------------------- | ------------------------------------- |
+| `transaction.atomic()`             | Wraps code in a transaction block     |
+| `transaction.savepoint()`          | Creates manual savepoint              |
+| `transaction.savepoint_rollback()` | Rolls back to a savepoint             |
+| `transaction.non_atomic_requests`  | Disables transactions for a view      |
+| `transaction.on_commit()`          | Runs callback after commit            |
+| `atomic` decorator                 | Shortcut for wrapping functions/views |
+
+---
+
+Excellent — you’ve pasted Django’s **official documentation** section on **low-level transaction APIs**.
+Let’s break it down into clear **notes + examples** so you can easily understand and remember it 👇
+
+---
+
+# 🧭 Django Transactions — Low-level API Notes
+
+> ⚠️ **Recommendation:**
+> Always use **`transaction.atomic()`** if possible.
+> Low-level APIs are only for **custom transaction management** (e.g., writing a database wrapper or special framework behavior).
+
+---
+
+## 🔹 1. Autocommit Control
+
+By default, Django runs in **autocommit mode**, meaning each query is committed immediately.
+
+### ✅ Functions
+
+| Function                                             | Purpose                                                  |
+| ---------------------------------------------------- | -------------------------------------------------------- |
+| `transaction.get_autocommit(using=None)`             | Returns whether autocommit is ON for the given database. |
+| `transaction.set_autocommit(autocommit, using=None)` | Turns autocommit ON/OFF manually.                        |
+
+### ⚙️ Example
+
+```python
+from django.db import transaction
+
+# Turn off autocommit
+transaction.set_autocommit(False)
+
+try:
+    obj1.save()
+    obj2.save()
+    transaction.commit()  # Manually commit all
+except:
+    transaction.rollback()  # Rollback if error
+finally:
+    transaction.set_autocommit(True)  # Restore autocommit
+```
+
+**Important:**
+
+* You **must commit or rollback** before re-enabling autocommit.
+* Django won’t let you disable autocommit inside an `atomic()` block (it would break atomicity).
+
+---
+
+## 🔹 2. Manual Transaction Control
+
+You can manually manage transactions using:
+
+| Function                           | Purpose                       |
+| ---------------------------------- | ----------------------------- |
+| `transaction.commit(using=None)`   | Commit current transaction    |
+| `transaction.rollback(using=None)` | Roll back current transaction |
+
+> These should only be used when **autocommit is turned off**.
+> Django’s `atomic()` handles this automatically otherwise.
+
+---
+
+## 🔹 3. Savepoints
+
+A **savepoint** allows **partial rollback** within a transaction.
+Useful when you want to undo *only part* of your changes instead of the whole transaction.
+
+### ✅ Functions
+
+| Function                                          | Purpose                                 |
+| ------------------------------------------------- | --------------------------------------- |
+| `transaction.savepoint(using=None)`               | Create a savepoint — returns `sid`      |
+| `transaction.savepoint_commit(sid, using=None)`   | Keep changes since savepoint            |
+| `transaction.savepoint_rollback(sid, using=None)` | Undo changes since savepoint            |
+| `transaction.clean_savepoints(using=None)`        | Reset savepoint counter (rarely needed) |
+
+### ⚙️ Example
+
+```python
+from django.db import transaction
+
+@transaction.atomic
+def viewfunc(request):
+    a.save()  # committed when transaction finishes
+
+    sid = transaction.savepoint()  # mark savepoint
+
+    b.save()
+    if want_to_keep_b:
+        transaction.savepoint_commit(sid)  # keep both a & b
+    else:
+        transaction.savepoint_rollback(sid)  # keep only a
+```
+
+---
+
+## 🔹 4. Handling Rollback Flags
+
+Inside an `atomic()` block, Django tracks a **rollback flag**.
+
+| Function                                         | Purpose                             |
+| ------------------------------------------------ | ----------------------------------- |
+| `transaction.get_rollback(using=None)`           | Returns True if rollback is pending |
+| `transaction.set_rollback(rollback, using=None)` | Manually set rollback flag          |
+
+### ⚙️ Example
+
+```python
+with transaction.atomic():
+    try:
+        risky_operation()
+    except SomeError:
+        # Mark rollback without raising
+        transaction.set_rollback(True)
+```
+
+Or to **prevent** rollback after handling an error:
+
+```python
+with transaction.atomic():
+    sid = transaction.savepoint()
+    try:
+        risky_operation()
+    except SomeError:
+        transaction.savepoint_rollback(sid)
+        transaction.set_rollback(False)  # Continue safely
+```
+
+---
+
+## 🔹 5. Database-Specific Notes
+
+### 🗄️ SQLite
+
+* Supports savepoints but with **limitations**.
+* Implicit commits occur before savepoint statements — so **only use savepoints inside `atomic()`**.
+
+### 🐬 MySQL
+
+* Transactions depend on **storage engine**:
+
+  * ✅ `InnoDB` supports transactions.
+  * ❌ `MyISAM` does not (Django runs autocommit only).
+
+### 🐘 PostgreSQL
+
+* After any SQL error, the transaction becomes invalid until rolled back:
+
+  > “current transaction is aborted, queries ignored until end of transaction block”
+
+#### Solution:
+
+Use **savepoints** to handle errors gracefully:
+
+```python
+a.save()
+sid = transaction.savepoint()
+try:
+    b.save()  # might raise IntegrityError
+    transaction.savepoint_commit(sid)
+except IntegrityError:
+    transaction.savepoint_rollback(sid)
+c.save()
+```
+
+---
+
+## 🔹 6. When to Use Low-Level APIs
+
+Use low-level APIs **only when**:
+
+* Writing custom transaction control (like a connection pooler or database tool).
+* Managing **multiple databases** manually.
+* Implementing **complex retry logic** or **nested rollback** behaviors.
+
+Otherwise, prefer:
+
+```python
+with transaction.atomic():
+    # safest, portable, high-level
+```
+
+---
+
+## 🧾 Summary
+
+| Concept            | Preferred Method         | Low-Level Alternative                             |
+| ------------------ | ------------------------ | ------------------------------------------------- |
+| Atomic transaction | `transaction.atomic()`   | `set_autocommit(False)` + `commit()`/`rollback()` |
+| Partial rollback   | Nested `atomic()`        | `savepoint()` / `savepoint_rollback()`            |
+| Post-commit action | `on_commit()`            | Manual logic after `commit()`                     |
+| Error handling     | Exceptions in `atomic()` | `set_rollback()` manually                         |
+
+---
+
+
