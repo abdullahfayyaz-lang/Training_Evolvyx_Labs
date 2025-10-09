@@ -161,3 +161,4 @@ class Person(models.Model):
     objects=models.Manager()#default manager
 
     
+    
