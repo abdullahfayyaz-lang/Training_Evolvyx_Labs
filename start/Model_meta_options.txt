@@ -1,0 +1,277 @@
+Abstract:
+ if we put abstract it true the model will be abstract base class
+ db_table = "music_album":
+ this is use to gie table by name but in django your table name is given on the name of model class but this is used if you want to have its name byt your own
+     class Meta:
+        db_table_comment = "Question answers":
+use to add db-comments
+Meta.db_tablespace
+class Meta:
+    db_tablespace = "custom_tablespace_name"
+Meaning:
+Specifies which database tablespace Django should use when creating the table for this model.
+
+A tablespace is a physical location on disk where the database stores its data — like a specific file or directory managed by the database.
+It helps database administrators:
+Distribute large tables across different disks.
+Optimize performance by separating indexes and data.
+Control storage usage and IO performance.
+If the backend doesn’t support tablespaces (e.g., SQLite), Django just ignores this option.
+
+
+Options.default_manager_name¶
+The name of the manager to use for the model’s _default_manager.
+
+
+Options.default_related_name¶
+The name that will be used by default for the relation from a related object back to this one. The default is <model_name>_set.
+This option also sets related_query_name.
+Example
+class Book(models.Model):
+    title = models.CharField(max_length=100)
+
+    class Meta:
+        default_related_name = "books"
+
+class Author(models.Model):
+    name = models.CharField(max_length=100)
+    book = models.ForeignKey(Book, on_delete=models.CASCADE)
+
+Now you can do:
+>>> book = Book.objects.first()
+>>> book.books.all()   # instead of book.author_set.all()
+
+
+
+🧠 Meta.get_latest_by — Overview
+class Meta:
+    get_latest_by = "some_field"
+💬 Purpose:
+It tells Django which field(s) should be used by default when you call a model’s:
+.latest()
+.earliest()
+on its default manager (objects by default).
+🧩 Example 1 – Common usage
+class Order(models.Model):
+    order_date = models.DateTimeField()
+    total_amount = models.DecimalField(max_digits=10, decimal_places=2)
+
+    class Meta:
+        get_latest_by = "order_date"
+Now you can call:
+>>> Order.objects.latest()
+That’s equivalent to:
+>>> Order.objects.latest("order_date")
+✅ It returns the most recent order based on order_date.
+🧩 Example 2 – Multiple fields
+You can specify a list of fields if you want to break ties or define a complex sort order:
+class Task(models.Model):
+    priority = models.IntegerField()
+    due_date = models.DateField()
+
+    class Meta:
+        get_latest_by = ["-priority", "due_date"]
+
+So:
+
+>>> Task.objects.latest()
+is equivalent to:
+>>> Task.objects.latest("-priority", "due_date")
+That means:
+Django will first sort by priority descending,
+then by due_date ascending.
+
+
+Meta.managed — Overview
+class Meta:
+    managed = True  # Default
+
+🔹 Meaning:
+When managed=True (the default):
+Django creates, alters, and deletes the table during migrations.
+When managed=False:
+Django does not touch the table in the database — no create, no delete, no schema migration.
+So the model still exists in your Django project (you can query it, use ORM, etc.), but Django assumes the table already exists (or is managed externally).
+
+
+What order_with_respect_to Does
+class Meta:
+    order_with_respect_to = "some_field"
+
+This tells Django:
+“Each set of related objects should have its own internal order relative to one parent.”
+It’s typically used when:
+You have a parent-child relationship (ForeignKey).
+The order of the child items matters, but only within each parent.
+
+🧩 Example
+from django.db import models
+class Question(models.Model):
+    text = models.TextField()
+
+    def __str__(self):
+        return self.text
+
+class Answer(models.Model):
+    question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    text = models.TextField()
+
+    class Meta:
+        order_with_respect_to = "question"
+
+🧩 Behavior Explained
+When you define order_with_respect_to, Django automatically adds:
+A hidden database field _order (integer column)
+→ used to store the order of each related object.
+Special methods to help get or set the order per parent.
+
+Options.ordering¶
+The default ordering for the object, for use when obtaining lists of objects:
+ordering = ["-order_date"]
+This is a tuple or list of strings and/or query expressions. Each string is a field name with an optional “-” prefix, which indicates descending order. Fields without a leading “-” will be ordered ascending. Use the string “?” to order randomly.
+
+For example, to order by a pub_date field ascending, use this:
+ordering = ["pub_date"]
+To order by pub_date descending, use this:
+ordering = ["-pub_date"]
+
+
+Options.permissions¶
+Extra permissions to enter into the permissions table when creating this object. Add, change, delete, and view permissions are automatically created for each model. This example specifies an extra permission, can_deliver_pizzas:
+permissions = [("can_deliver_pizzas", "Can deliver pizzas")]
+This is a list or tuple of 2-tuples in the format (permission_code, human_readable_permission_name).
+default_permissions¶
+Options.default_permissions¶
+Defaults to ('add', 'change', 'delete', 'view'). You may customize this list, for example, by setting this to an empty list if your app doesn’t require any of the default permissions. It must be specified on the model before the model is created by migrate in order to prevent any omitted permissions from being created.
+
+
+proxy
+Options.proxy
+If proxy = True, a model which subclasses another model will be treated as a proxy model.
+
+
+
+1️⃣ Meta.required_db_features
+class Meta:
+    required_db_features = ["some_feature"]
+
+🔹 Purpose:
+This tells Django:
+“Only include this model in migrations if the database backend supports certain features.”
+So, when running migrate, Django will:
+Check the current database connection’s features, and
+Skip creating the table for this model if those features aren’t present.
+
+Example — JSON support only
+class JSONTest(models.Model):
+    data = models.JSONField()
+
+    class Meta:
+        required_db_features = ["supports_json_field"]
+
+Only databases that have native JSON support (like PostgreSQL or newer MySQL) will create this model’s table.
+
+🧩 Meta.required_db_vendor
+class Meta:
+    required_db_vendor = "postgresql"
+🔹 Purpose:
+This makes a model specific to one database vendor — Django will only create it if you’re using that vendor.
+🧠 Example 1 — PostgreSQL-only model
+class PGOnlyModel(models.Model):
+    data = models.JSONField()
+
+    class Meta:
+        required_db_vendor = "postgresql"
+✅ Created only when connected to PostgreSQL.
+❌ Skipped on MySQL, SQLite, or Oracle.
+
+Meta.select_on_save
+class Meta:
+    select_on_save = True  # or False (default)
+
+🧩 Purpose
+This option controls how Django checks if an object already exists when you call .save().
+In other words, it affects the algorithm used internally by Django to save model instances — specifically, whether Django does a SELECT-before-UPDATE or not.
+
+🧩indexes¶
+Options.indexes¶
+A list of indexes that you want to define on the model:
+from django.db import models
+class Customer(models.Model):
+    first_name = models.CharField(max_length=100)
+    last_name = models.CharField(max_length=100)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=["last_name", "first_name"]),
+            models.Index(fields=["first_name"], name="first_name_idx"),
+        ]
+
+unique_together¶
+Options.unique_together¶
+Use UniqueConstraint with the constraints option instead.
+UniqueConstraint provides more functionality than unique_together. unique_together may be deprecated in the future.
+Sets of field names that, taken together, must be unique:
+unique_together = [["driver", "restaurant"]]
+This is a list of lists that must be unique when considered together. It’s used in the Django admin and is enforced at the database level (i.e., the appropriate UNIQUE statements are included in the CREATE TABLE statement).
+For convenience, unique_together can be a single list when dealing with a single set of fields:
+unique_together = ["driver", "restaurant"]
+A ManyToManyField cannot be included in unique_together. (It’s not clear what that would even mean!) If you need to validate uniqueness related to a ManyToManyField, try using a signal or an explicit through model.
+The ValidationError raised during model validation when the constraint is violated has the unique_together error code.
+
+constraints¶
+Options.constraints¶
+A list of constraints that you want to define on the model:
+from django.db import models
+class Customer(models.Model):
+    age = models.IntegerField()
+
+    class Meta:
+        constraints = [
+            models.CheckConstraint(condition=models.Q(age__gte=18), name="age_gte_18"),
+        ]
+
+verbose_name¶
+Options.verbose_name¶
+A human-readable name for the object, singular:
+verbose_name = "pizza"
+If this isn’t given, Django will use a munged version of the class name: CamelCase becomes camel case.
+verbose_name_plural¶
+Options.verbose_name_plural¶
+The plural name for the object:
+verbose_name_plural = "stories"
+If this isn’t given, Django will use verbose_name + "s".
+
+
+| Option                  | Default         | Purpose / Use                                   |
+| ----------------------- | --------------- | ----------------------------------------------- |
+| `db_tablespace`         | Project default | Set database tablespace                         |
+| `default_related_name`  | `<model>_set`   | Change default reverse relation name            |
+| `get_latest_by`         | —               | Define field(s) for `.latest()` / `.earliest()` |
+| `managed`               | `True`          | Control if Django manages the table             |
+| `order_with_respect_to` | —               | Order related objects by parent                 |
+| `required_db_features`  | —               | Restrict model to DBs with certain features     |
+| `required_db_vendor`    | —               | Restrict model to a specific DB backend         |
+| `select_on_save`        | `False`         | Choose old vs. new save algorithm               |
+
+
+Most common & useful
+class Meta:
+    db_table = "custom_table_name"        # DB table name
+    ordering = ["-created_at", "name"]    # default ordering
+    verbose_name = "Person"
+    verbose_name_plural = "People"
+    get_latest_by = "created_at"          # used by Model.get_latest()
+    unique_together = (("a","b"),)        # legacy; prefer UniqueConstraint
+    indexes = [                            # database indexes
+        models.Index(fields=["created_at"], name="created_idx"),
+    ]
+    constraints = [                        # database constraints
+        models.UniqueConstraint(fields=["a","b"], name="unique_a_b"),
+        models.CheckConstraint(check=Q(age__gte=0), name="age_non_negative"),
+    ]
+    permissions = (("can_publish","Can publish"),)  # custom perms
+    default_related_name = "%(app_label)s_%(class)s_related"
+    abstract = False                       # make True for abstract bases
+    proxy = False                          # proxy model
+    managed = True                         # if False, migrations ignore table
