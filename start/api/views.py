@@ -5,6 +5,7 @@ from api.models import Product,Order,OrderItem
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
+from rest_framework import viewsets
 # Create your views here.
 
 @api_view(['GET'])
@@ -30,3 +31,8 @@ def order_details(request,pk):
     order=get_object_or_404(Order,pk=pk)
     serializer=OrderSerializer(order)
     return Response(serializer.data)
+
+
+class OrderViewSet(viewsets.ModelViewSet):
+    queryset=Order.objects.all()
+    serializer_class=OrderSerializer
