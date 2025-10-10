@@ -59,13 +59,7 @@ class NewMiddleware2:
     # So this hook lets you:
     # Modify the template context or template name
     # Add or change data before rendering the template
-    def process_template_response(self, request, response):
-        print(">>> process_template_response called")
-        # Add extra context data before rendering
-        response.context_data["extra_message"] = "Added by middleware ✨"
 
-        # Optionally, you can even change the template:
-        response.template_name = "index.html"
 
 #middle ware cycle 
 
