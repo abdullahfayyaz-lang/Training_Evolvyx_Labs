@@ -1,0 +1,129 @@
+💧 What Is Database Connection Pooling?
+Connection pooling means reusing existing database connections instead of opening a new one every time your application needs to talk to the database.
+🧠 Without Pooling (Default Django behavior)
+Each time a web request hits your Django app:
+Django opens a new database connection.
+Executes queries.
+Closes the connection.
+⚠️ Problem:
+Opening/closing a DB connection is expensive (takes time and CPU).
+If your app gets 1000 requests per second, that’s 1000 open/close cycles per second.
+This leads to slow performance and too many database connections.
+🚀 With Connection Pooling
+Instead of creating new connections all the time, Django (or a pooling layer like PgBouncer) keeps a pool — a ready-to-use set of open database connections.
+When a request comes in:
+Django borrows a connection from the pool.
+Executes the query.
+Returns it to the pool when done.
+If another request arrives, it just reuses that same connection.
+🧩 Analogy
+Think of it like a car rental service:
+❌ Without pooling: You buy a new car for every trip, then destroy it.
+✅ With pooling: You keep a fleet of cars and reuse them for each trip.
+
+| Benefit                 | Description                                                   |
+| ----------------------- | ------------------------------------------------------------- |
+| ⚡ **Performance**       | Avoids the overhead of creating new DB connections each time. |
+| 🧠 **Scalability**      | Can handle more concurrent requests efficiently.              |
+| 🧩 **Resource control** | Limits how many connections your app can open to the DB.      |
+| 🔒 **Stability**        | Prevents “too many connections” errors under load.            |
+
+Example:
+DATABASES = {
+    'default': {
+        'ENGINE': 'django_db_geventpool.backends.postgresql_psycopg2',
+        'NAME': 'mydb',
+        'USER': 'postgres',
+        'PASSWORD': 'password',
+        'HOST': 'localhost',
+        'PORT': '5432',
+        'OPTIONS': {
+            'MAX_CONNS': 20,
+            'REUSE_CONNS': 10,
+        }
+    }
+}
+Here:
+MAX_CONNS = max total connections in pool.
+REUSE_CONNS = how many idle connections are kept for reuse.
+
+🧾 In Short
+Connection pooling = caching database connections for reuse
+→ fewer connection setups
+→ faster response times
+→ less database strain
+
+__________________________________________________________________________________________________________________________________________________________________________
+🧠 1. Understanding Database Connections in Django
+By default, Django does NOT use connection pooling — each web request opens a database connection when needed and closes it after the request ends (depending on CONN_MAX_AGE).
+Default connection behavior:
+CONN_MAX_AGE = 0 → Django closes DB connections after each request.
+CONN_MAX_AGE = None → Persistent connections (never close).
+CONN_MAX_AGE = 60 → Keep connections alive for 60 seconds (recommended middle ground).
+Example in settings.py:
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": "mydb",
+        "USER": "postgres",
+        "PASSWORD": "password",
+        "HOST": "localhost",
+        "PORT": "5432",
+        "CONN_MAX_AGE": 60,  # ✅ keep connection alive for 60s
+    }
+}
+⚙️ 2. Enabling True Connection Pooling (with django-db-geventpool or sqlalchemy)
+Django itself doesn’t include a connection pooler, but you can add one using libraries or external tools.
+Option 1: ✅ django-db-geventpool (pure Django)
+A simple, drop-in connection pool for PostgreSQL/MySQL.
+Install:
+pip install django-db-geventpool
+Update settings.py:
+DATABASES = {
+    'default': {
+        'ENGINE': 'django_db_geventpool.backends.postgresql_psycopg2',
+        'NAME': 'mydb',
+        'USER': 'postgres',
+        'PASSWORD': 'password',
+        'HOST': 'localhost',
+        'PORT': '5432',
+        'CONN_MAX_AGE': 0,
+        'OPTIONS': {
+            'MAX_CONNS': 20,  # max number of connections in pool
+            'REUSE_CONNS': 10,  # how many to keep idle for reuse
+        }
+    }
+}
+
+Option 2: 🧩 Use PgBouncer (recommended for production)
+PgBouncer is a lightweight PostgreSQL connection pooler that sits between Django and PostgreSQL.
+Steps:
+Install and run PgBouncer.
+Configure Django to connect to PgBouncer instead of PostgreSQL directly:
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'HOST': '127.0.0.1',
+        'PORT': '6432',  # PgBouncer port
+        'NAME': 'mydb',
+        'USER': 'postgres',
+        'PASSWORD': 'password',
+    }
+}
+PgBouncer manages pooling, reducing connection overhead.
+
+
+Connection pool¶
+New in Django 5.1.
+To use a connection pool with psycopg, you can either set "pool" in the OPTIONS part of your database configuration in DATABASES to be a dict to be passed to ConnectionPool, or to True to use the ConnectionPool defaults:
+
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.postgresql",
+        # ...
+        "OPTIONS": {
+            "pool": True,
+        },
+    },
+}
+This option requires psycopg[pool] or psycopg-pool to be installed and is ignored with psycopg2.
