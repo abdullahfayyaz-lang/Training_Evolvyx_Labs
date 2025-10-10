@@ -15,15 +15,18 @@ class ProductSerializer(serializers.ModelSerializer):
         return value
 
 class OrderItemSerializer(serializers.ModelSerializer):
+    product_name= serializers.CharField(source='product.name')
+    product_price= serializers.DecimalField(source='product.price',max_digits=10,decimal_places=2)
     class Meta:
         model =OrderItem
         fields=(
-            'product','quantity'
+            'product_name','quantity','product_price','item_subtotal'
         )
 
 class OrderSerializer(serializers.ModelSerializer):
     items=OrderItemSerializer(many=True,read_only=True)
     total_price=serializers.SerializerMethodField()
+    
 
     def get_total_price(self,obj):
         order_items=obj.items.all()
