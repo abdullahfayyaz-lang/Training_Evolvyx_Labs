@@ -13,3 +13,18 @@ class ProductSerializer(serializers.ModelSerializer):
         if value <=0:
             raise serializers.ValidationError("Price must be greater then 0")
         return value
+
+class OrderItemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model =OrderItem
+        fields=(
+            'product','quantity'
+        )
+
+class OrderSerializer(serializers.ModelSerializer):
+    items=OrderItemSerializer(many=True,read_only=True)
+    class Meta:
+        model=Order
+        fields=(
+            'order_id','created_at','user','status','items','pk'
+        )
