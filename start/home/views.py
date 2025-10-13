@@ -2,6 +2,7 @@ from django.shortcuts import render,get_object_or_404,redirect
 from django.http import HttpResponse
 from .models import Student
 from .form import ContactForm,CustomerForm,StudentForm
+
 # Create your views here.
 def index(request):
     context={#its used to extract data from models and then pass it to templates
