@@ -1,0 +1,7 @@
+Documenting your API
+A REST API should spend almost all of its descriptive effort in defining the media type(s) used for representing resources and driving application state.
+— Roy Fielding, REST APIs must be hypertext driven
+REST framework provides a range of different choices for documenting your API. The following is a non-exhaustive list of the most popular ones.
+
+We will be focusing on drf-spectacular
+--It is an openAPi 3 schema generation library.

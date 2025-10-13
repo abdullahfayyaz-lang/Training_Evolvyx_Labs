@@ -42,7 +42,8 @@ INSTALLED_APPS = [
     'home',
     'api',
     'rest_framework',
-    'silk'
+    'silk',
+    'drf_spectacular'
 ]
 
 MIDDLEWARE = [
@@ -141,5 +142,14 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_simplejwt.authentication.JWTAuthentication',
         'rest_framework.authentication.SessionAuthentication',
-    ]
+        
+    ],
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Python Django Training',
+    'DESCRIPTION': 'Simple Product & Order API that helps is learn Django rest frameework basics',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+    # OTHER SETTINGS
 }
