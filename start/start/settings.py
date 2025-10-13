@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'home',
     'api',
     'rest_framework',
+    'silk'
 ]
 
 MIDDLEWARE = [
@@ -52,7 +53,9 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware','home.middleware.NewMiddleware2',
-    'home.middleware.new_middleware'
+    'home.middleware.new_middleware',
+    'silk.middleware.SilkyMiddleware'
+
 ]
 
 ROOT_URLCONF = 'start.urls'
