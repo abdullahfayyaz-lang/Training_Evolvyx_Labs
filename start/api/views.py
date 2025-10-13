@@ -22,7 +22,7 @@ class ProductListCreateAPIView(generics.ListCreateAPIView):
 
     def get_permissions(self):
         self.permission_classes=[AllowAny]
-        if self.request.method =='POST':
+        if self.request.method =='POST':#checks if request method id post only admin can aceess it
             self.permission_classes=[IsAdminUser]
         return super().get_permissions()
 
