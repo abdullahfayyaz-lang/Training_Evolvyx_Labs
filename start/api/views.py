@@ -11,8 +11,12 @@ from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
 # Create your views here.
 
-class ProductListAPIView(generics.ListAPIView):
-    queryset=Product.objects.filter(stock__gt=0)# now it will only return the products with stock greater then 0
+# class ProductListAPIView(generics.ListAPIView):
+#     queryset=Product.objects.all()# now it will only return the products with stock greater then 0
+#     serializer_class=ProductSerializer
+
+class ProductListCreateAPIView(generics.ListCreateAPIView):
+    queryset=Product.objects.all()
     serializer_class=ProductSerializer
 
 class ProductDetailAPIView(generics.RetrieveAPIView):
