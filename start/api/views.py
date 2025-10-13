@@ -11,6 +11,7 @@ from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated,IsAdminUser,AllowAny
 from api.filters import ProductFilter, IsStockFilterBackend
 from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.pagination import PageNumberPagination, LimitOffsetPagination
 
 # Create your views here.
 
@@ -20,12 +21,17 @@ from django_filters.rest_framework import DjangoFilterBackend
 
 class ProductListCreateAPIView(generics.ListCreateAPIView):
 
-    queryset=Product.objects.all()
+    queryset=Product.objects.order_by('pk')
     serializer_class=ProductSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter, IsStockFilterBackend]  
     filterset_class = ProductFilter
     search_fields = ['=name', 'description'] #put (=) infront of field if you want exact match
     ordering_fields=['name','price','stock']
+    pagination_class=LimitOffsetPagination
+    # pagination_class.page_size=2
+    # pagination_class.page_query_param='pagenum'
+    # pagination_class.page_size_query_param='size'
+    # pagination_class.max_page_size=6
 
     def get_permissions(self):
         self.permission_classes=[AllowAny]
