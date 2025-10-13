@@ -2,7 +2,7 @@ from django.shortcuts import render,get_object_or_404
 from django.http import JsonResponse
 from api.serializers import ProductSerializer,OrderItemSerializer,OrderSerializer
 from api.models import Product,Order,OrderItem
-from rest_framework import generics
+from rest_framework import generics , filters
 from rest_framework.permissions import IsAdminUser
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -10,6 +10,8 @@ from rest_framework.decorators import api_view,action,permission_classes
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated,IsAdminUser,AllowAny
 from api.filters import ProductFilter
+from django_filters.rest_framework import DjangoFilterBackend
+
 # Create your views here.
 
 # class ProductListAPIView(generics.ListAPIView):
@@ -20,7 +22,10 @@ class ProductListCreateAPIView(generics.ListCreateAPIView):
 
     queryset=Product.objects.all()
     serializer_class=ProductSerializer
-    filterset_class=ProductFilter
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]  
+    filterset_class = ProductFilter
+    search_fields = ['=name', 'description'] #put (=) infront of field if you want exact match
+    ordering_fields=['name','price','stock']
 
     def get_permissions(self):
         self.permission_classes=[AllowAny]
