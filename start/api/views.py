@@ -9,7 +9,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view,action,permission_classes
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated,IsAdminUser,AllowAny
-from api.filters import ProductFilter
+from api.filters import ProductFilter, IsStockFilterBackend
 from django_filters.rest_framework import DjangoFilterBackend
 
 # Create your views here.
@@ -22,7 +22,7 @@ class ProductListCreateAPIView(generics.ListCreateAPIView):
 
     queryset=Product.objects.all()
     serializer_class=ProductSerializer
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]  
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter, IsStockFilterBackend]  
     filterset_class = ProductFilter
     search_fields = ['=name', 'description'] #put (=) infront of field if you want exact match
     ordering_fields=['name','price','stock']
