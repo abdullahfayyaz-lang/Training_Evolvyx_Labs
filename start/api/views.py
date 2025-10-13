@@ -22,14 +22,21 @@ class ProductListCreateAPIView(generics.ListCreateAPIView):
 
     def get_permissions(self):
         self.permission_classes=[AllowAny]
-        if self.request.method =='POST':#checks if request method id post only admin can aceess it
+        if self.request.method =='POST':#checks if request method is post only admin can aceess it
             self.permission_classes=[IsAdminUser]
         return super().get_permissions()
 
-class ProductDetailAPIView(generics.RetrieveAPIView):
+class ProductDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
     queryset=Product.objects.all()
     serializer_class=ProductSerializer
     lookip_url_kwarg="product_id"##to chnage url parameter else then pk we use this 
+    def get_permissions(self):
+        self.permission_classes=[AllowAny]
+        if self.request.method in ['PUT','PATCH',"DELETE"]:#checks if request method id put,patch or delete then only admin can aceess it
+            self.permission_classes=[IsAdminUser]
+        return super().get_permissions()
+
+
 # @api_view(['GET'])
 # def product_list(request):
 #     products=Product.objects.all()
@@ -41,6 +48,14 @@ class ProductDetailAPIView(generics.RetrieveAPIView):
 #     products=get_object_or_404(Product,pk=pk)
 #     serializer=ProductSerializer(products)
 #     return Response(serializer.data)
+
+
+# RetrieveUpdateDestroyAPIView
+# Used for read-write-delete endpoints to represent a single model instance.
+
+# Provides get, put, patch and delete method handlers.
+
+# Extends: GenericAPIView, RetrieveModelMixin, UpdateModelMixin, DestroyModelMixin
 
 @api_view(['GET'])
 def order_list(request):

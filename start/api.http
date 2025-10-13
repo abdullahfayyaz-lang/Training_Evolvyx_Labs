@@ -1,11 +1,27 @@
-GET http://127.0.0.1:8000/api/products/ HTTP/1.1
+GET http://127.0.0.1:8000/api/products/5/ HTTP/1.1
+
+###
+
+PUT  http://127.0.0.1:8000/api/products/5/ HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzYwMzgzNjIwLCJpYXQiOjE3NjAzODMzMjAsImp0aSI6IjExYWJhMmRiNzdmNjQ1MmFiYmM3ZTY3NjA3ZDJmNmRmIiwidXNlcl9pZCI6IjIifQ.BNVG0Q-_O97KhFZe5t6jhpPAyh_qN51IjoWRbNznlSE
+
+
+{
+    "name":"TV",
+    "price":300,
+    "stock":14,
+    "description":"An amazing tv "
+}
+###
+DELETE  http://127.0.0.1:8000/api/products/5/ HTTP/1.1
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzYwMzgzNjIwLCJpYXQiOjE3NjAzODMzMjAsImp0aSI6IjExYWJhMmRiNzdmNjQ1MmFiYmM3ZTY3NjA3ZDJmNmRmIiwidXNlcl9pZCI6IjIifQ.BNVG0Q-_O97KhFZe5t6jhpPAyh_qN51IjoWRbNznlSE
 
 ###
 
 POST  http://127.0.0.1:8000/api/products/ 
 Content-Type: application/json
-Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzYwMzcwNDY3LCJpYXQiOjE3NjAzNzAxNjcsImp0aSI6IjJhZjdjYmMwNzViODQ4YTI4MDExNWVjOTg5YWY5YmM0IiwidXNlcl9pZCI6IjIifQ._Zq35YJsZE1CAFeQA4EFxzNXNkFyIMmZlos37MYbli4
-
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzYwMzgzNjIwLCJpYXQiOjE3NjAzODMzMjAsImp0aSI6IjExYWJhMmRiNzdmNjQ1MmFiYmM3ZTY3NjA3ZDJmNmRmIiwidXNlcl9pZCI6IjIifQ.BNVG0Q-_O97KhFZe5t6jhpPAyh_qN51IjoWRbNznlSE
 {
     "name":"TV",
     "price":300,
