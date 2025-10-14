@@ -68,3 +68,22 @@ Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiY
     { "product": 3, "quantity": 1 }
   ]
 }
+###
+GET http://127.0.0.1:8000/api/orders/57cb6620-95f2-48f0-9898-19276c618feb/
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzYwNDQ1NjAyLCJpYXQiOjE3NjA0NDUzMDIsImp0aSI6ImZhZjMxOTg5Y2E4ODRmNDRiY2VkMmM5NTBiMjc4NDJhIiwidXNlcl9pZCI6IjIifQ.7OB22s1YpdvvkEkz90yOnSM1Q5463zoj3meetYP766s
+
+
+###
+PUT http://127.0.0.1:8000/api/orders/57cb6620-95f2-48f0-9898-19276c618feb/
+Content-Type: application/json
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzYwNDQ2MTY0LCJpYXQiOjE3NjA0NDU4NjQsImp0aSI6IjIzMmE0MTkzODA1ZjQwYmE4YzU0MDI2ZDBlYWNlNGNkIiwidXNlcl9pZCI6IjIifQ.UJhGE_mbFBzH_zGzsoDM8ojkGU_kZq3G3x6z_1BUogc
+
+{
+    "status":"Confirmed",
+    "items":[
+
+        {"product": 2, "quantity": 10},
+        {"product": 2, "quantity": 2}
+
+    ]
+}
