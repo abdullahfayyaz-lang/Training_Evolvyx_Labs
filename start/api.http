@@ -38,8 +38,8 @@ POST http://127.0.0.1:8000/api/token/
 Content-Type: application/json
 
 {
-    "username": "abdullah",
-    "password": "abdullah"
+    "username": "enemy",
+    "password": "enemy"
 }
  
 ###
@@ -52,5 +52,19 @@ POST http://127.0.0.1:8000/api/token/refresh
 Content-Type: application/json
 
 {
-    "refresh": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTc2MDQ1OTQzMCwiaWF0IjoxNzYwMzczMDMwLCJqdGkiOiIwYTU2YmYyMTdlZjU0ZjhiYWMwMmViZWZjYTJiY2Y3ZSIsInVzZXJfaWQiOiIyIn0.Jg2tWUX569EuWSyNex_4bglvntjSD1tCcJCo8bKnV8c""
+    "refresh": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTc2MDQ1OTQzMCwiaWF0IjoxNzYwMzczMDMwLCJqdGkiOiIwYTU2YmYyMTdlZjU0ZjhiYWMwMmViZWZjYTJiY2Y3ZSIsInVzZXJfaWQiOiIyIn0.Jg2tWUX569EuWSyNex_4bglvntjSD1tCcJCo8bKnV8c"
+}
+###
+
+
+POST http://127.0.0.1:8000/api/orders/  HTTP/1.1
+Content-Type: application/json
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzYwNDQ0OTgzLCJpYXQiOjE3NjA0NDQ2ODMsImp0aSI6Ijk4ZTUwYzcyYjdhYjQyNzRhOWU1NzgyZGI5YjE2N2FlIiwidXNlcl9pZCI6IjIifQ.rd8WAX2WlM7s-bgMJt8PBC_9rBHEo7GokfL2imhW1gY
+
+{
+  "status": "Pending",
+  "items": [
+    { "product": 2, "quantity": 2 },
+    { "product": 3, "quantity": 1 }
+  ]
 }

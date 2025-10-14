@@ -1,6 +1,6 @@
 from django.shortcuts import render,get_object_or_404
 from django.http import JsonResponse
-from api.serializers import ProductSerializer,OrderItemSerializer,OrderSerializer
+from api.serializers import ProductSerializer,OrderItemSerializer,OrderSerializer,OrderCreateSerializer
 from api.models import Product,Order,OrderItem
 from rest_framework import generics , filters
 from rest_framework.permissions import IsAdminUser
@@ -9,7 +9,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view,action,permission_classes
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated,IsAdminUser,AllowAny
-from api.filters import ProductFilter, IsStockFilterBackend
+from api.filters import ProductFilter, IsStockFilterBackend, OrderFilter
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.pagination import PageNumberPagination, LimitOffsetPagination
 
@@ -91,19 +91,34 @@ class UserOrderAPIListView(generics.ListAPIView):
 
 
 class OrderViewSet(viewsets.ModelViewSet):
-    queryset=Order.objects.all()
-    serializer_class=OrderSerializer
-    permission_classes=[IsAuthenticated]
-    pagination_class=None
+    queryset = Order.objects.prefetch_related('items__product')
+    serializer_class = OrderSerializer
+    permission_classes = [IsAuthenticated]
+    pagination_class = None
+    filterset_class = OrderFilter
+    filter_backends = [DjangoFilterBackend]
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+    def get_serializer_class(self):
+        # can also check if POST: if self.request.method == 'POST'
+        if self.action == 'create':
+            return OrderCreateSerializer
+        return super().get_serializer_class()
 
     def get_queryset(self):
-        qs =super().get_queryset()
+        qs = super().get_queryset()
         if not self.request.user.is_staff:
-            qs=qs.filter(user=self.request.user)
+            qs = qs.filter(user=self.request.user)
         return qs
 
-    @action(detail=False,methods=['get'],url_path='user-orders')
-    def user_orders(self,request):
-        orders=self.get_queryset().filter(user=request.user)
-        serializer=self.get_serializer(orders,many=True)
+class ProductInfoAPIView(APIView):
+    def get(self, request):
+        products = Product.objects.all()
+        serializer = ProductInfoSerializer({
+            'products': products,
+            'count': len(products),
+            'max_price': products.aggregate(max_price=Max('price'))['max_price']
+        })
         return Response(serializer.data)
