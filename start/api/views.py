@@ -1,7 +1,7 @@
 from django.shortcuts import render,get_object_or_404
 from django.http import JsonResponse
-from api.serializers import ProductSerializer,OrderItemSerializer,OrderSerializer,OrderCreateSerializer
-from api.models import Product,Order,OrderItem
+from api.serializers import ProductSerializer,OrderItemSerializer,OrderSerializer,OrderCreateSerializer, UserSeralizer
+from api.models import Product,Order,OrderItem, User
 from rest_framework import generics , filters
 from rest_framework.permissions import IsAdminUser
 from rest_framework.views import APIView
@@ -122,3 +122,10 @@ class ProductInfoAPIView(APIView):
             'max_price': products.aggregate(max_price=Max('price'))['max_price']
         })
         return Response(serializer.data)
+
+
+class UserListView(generics.ListAPIView):
+    queryset=User.objects.all()
+    permission_classes=[IsAuthenticated]
+    serializer_class=UserSeralizer
+    pagination_class=None

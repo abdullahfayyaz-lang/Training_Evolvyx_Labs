@@ -1,8 +1,16 @@
 from rest_framework import serializers
-from .models import Product,Order,OrderItem
+from .models import Product,Order,OrderItem ,User
 from django.db import transaction
 
-
+class UserSeralizer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        #fields='__all__' -> Not good 
+        fields=(  #best practice
+            "username",
+            "email",
+            "is_staff"
+        )
 
 
 class ProductSerializer(serializers.ModelSerializer):
