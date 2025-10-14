@@ -12,6 +12,7 @@ from rest_framework.permissions import IsAuthenticated,IsAdminUser,AllowAny
 from api.filters import ProductFilter, IsStockFilterBackend, OrderFilter
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.pagination import PageNumberPagination, LimitOffsetPagination
+from rest_framework.throttling import ScopedRateThrottle
 
 # Create your views here.
 
@@ -20,7 +21,8 @@ from rest_framework.pagination import PageNumberPagination, LimitOffsetPaginatio
 #     serializer_class=ProductSerializer
 
 class ProductListCreateAPIView(generics.ListCreateAPIView):
-
+    throttle_scope = 'products'
+    throttle_classes=[ScopedRateThrottle]
     queryset=Product.objects.order_by('pk')
     serializer_class=ProductSerializer
     filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter, IsStockFilterBackend]  
@@ -91,6 +93,7 @@ class UserOrderAPIListView(generics.ListAPIView):
 
 
 class OrderViewSet(viewsets.ModelViewSet):
+    throttle_scope = 'orders'
     queryset = Order.objects.prefetch_related('items__product')
     serializer_class = OrderSerializer
     permission_classes = [IsAuthenticated]
