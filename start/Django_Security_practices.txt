@@ -1,0 +1,87 @@
+1. Use HTTPS Everywhere
+
+Enforce HTTPS in your Django settings by setting SECURE_SSL_REDIRECT = True to ensure all traffic is encrypted.
+
+2. Keep Django and Dependencies Updated
+
+Always keep Django and third-party libraries up to date to mitigate vulnerabilities. Use pip to install updates and stay current with security patches.
+
+3. Enable CSRF Protection
+
+Django includes Cross-Site Request Forgery (CSRF) protection by default. Ensure it's enabled (CSRF_COOKIE_SECURE = True for HTTPS) and use {% csrf_token %} in your forms.
+
+4. Set Secure Cookies
+
+Set cookies to be secure and HttpOnly to protect against client-side attacks.
+
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = True
+
+5. Use Strong Password Hashing
+
+Django uses PBKDF2 for password hashing by default, but you can use stronger algorithms like Argon2 by setting:
+
+PASSWORD_HASHERS = ['django.contrib.auth.hashers.Argon2PasswordHasher']
+
+6. Limit User Permissions
+
+Use Django’s built-in permissions and groups to limit access to views and actions for different users. Avoid using overly permissive roles.
+
+7. Use Django’s Security Middleware
+
+Enable security middleware like SecurityMiddleware in your MIDDLEWARE settings to add additional layers of protection:
+
+MIDDLEWARE = [
+    'django.middleware.security.SecurityMiddleware',
+    # Other middleware entries
+]
+
+8. Set Content Security Policy (CSP)
+
+To prevent XSS and other attacks, use Django's django-csp middleware to enforce a Content Security Policy:
+
+CSP_DEFAULT_SRC = ("'self'",)
+
+9. Sanitize User Input
+
+Always validate and sanitize any input from users. Django’s form validation and model field validators are helpful, but consider using libraries like bleach for HTML sanitization.
+
+10. Disable Debug Mode in Production
+
+Never deploy Django with DEBUG = True in production as it exposes detailed error messages. Always set DEBUG = False and use proper logging.
+
+11. Set a Strong Secret Key
+
+Ensure that your SECRET_KEY is long, random, and kept private. Avoid using weak or predictable keys.
+
+12. Restrict Allowed Hosts
+
+Set ALLOWED_HOSTS to a list of valid domain names/IP addresses for your site:
+
+ALLOWED_HOSTS = ['yourdomain.com', 'www.yourdomain.com']
+
+13. Use Django’s Rate Limiting
+
+Implement rate-limiting using middleware or tools like django-ratelimit to prevent brute-force attacks.
+
+14. Enable Database Security
+
+Protect your database credentials and restrict user permissions. Use DATABASES settings with secure credentials management, and limit database user privileges.
+
+15. Backup Regularly
+
+Regularly back up your data to prevent data loss in case of a breach or attack.
+
+16. Use Two-Factor Authentication (2FA)
+
+Implement 2FA for sensitive accounts, like admins, using packages like django-otp or django-two-factor-auth.
+
+17. Use Django’s Clickjacking Protection
+
+Enable clickjacking protection using:
+
+X_FRAME_OPTIONS = 'DENY'
+
+18. Limit Exposure of Sensitive Information
+
+Avoid exposing sensitive information like database credentials, secret keys, or API keys in your codebase. Use environment variables or a secure vault service.
