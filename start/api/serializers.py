@@ -43,7 +43,6 @@ class OrderCreateSerializer(serializers.ModelSerializer):
                 OrderItem.objects.create(order=order, **item)
 
         return order
-
     def update(self,instance,validated_data):
         orderitem_data = validated_data.pop('items')
         with transaction.atomic():
