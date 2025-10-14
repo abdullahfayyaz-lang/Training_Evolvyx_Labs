@@ -13,14 +13,14 @@ from api.filters import ProductFilter, IsStockFilterBackend, OrderFilter
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.pagination import PageNumberPagination, LimitOffsetPagination
 from rest_framework.throttling import ScopedRateThrottle
-
+from rest_framework_simplejwt.tokens import RefreshToken# for jwt one
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, authenticate, logout
 from .forms import CustomUserCreationForm
-
 from django.contrib import messages
 from .models import User
-
+from rest_framework.response import Response
+from django.http import JsonResponse
 # Create your views here.
 
 # class ProductListAPIView(generics.ListAPIView):
@@ -140,7 +140,7 @@ class UserListView(generics.ListAPIView):
     serializer_class=UserSeralizer
     pagination_class=None
 
-# Signup View
+# Signup View-> Using simple django authntication
 def signup(request):
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST)
@@ -154,18 +154,45 @@ def signup(request):
         form = CustomUserCreationForm()
     return render(request, 'signup.html', {'form': form})
 
-# Login View
+# Login View-> Using simple django authntication
+# def login_view(request):
+#     if request.method == 'POST':
+#         username = request.POST['username']
+#         password = request.POST['password']
+#         user = authenticate(request, username=username, password=password)
+#         print(user)
+#         if user is not None:
+#             login(request, user)
+#             return redirect('http://127.0.0.1:8000/api/orders/')  # Redirect to the API orders endpoint
+#         else:
+#             messages.error(request, "Invalid credentials.")
+#     return render(request, 'login.html')
+
+
+#login implementation using JWT token
 def login_view(request):
     if request.method == 'POST':
         username = request.POST['username']
         password = request.POST['password']
         user = authenticate(request, username=username, password=password)
-        print(user)
+
         if user is not None:
+            # Authenticate the user
             login(request, user)
-            return redirect('home')  # Redirect to the homepage or dashboard
+            # Generate JWT token
+            refresh = RefreshToken.for_user(user)
+            access_token = str(refresh.access_token)
+            # Return the JWT token in the response or redirect to the desired API
+            response_data = {
+                'access_token': access_token,
+                'refresh_token': str(refresh),
+            }
+            # Redirect to the orders API with the JWT token
+            return redirect(f'http://127.0.0.1:8000/api/orders/')
+
         else:
             messages.error(request, "Invalid credentials.")
+    
     return render(request, 'login.html')
 
 # Logout View
