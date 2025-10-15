@@ -21,6 +21,7 @@ from django.contrib import messages
 from .models import User
 from rest_framework.response import Response
 from django.http import JsonResponse
+from django.contrib.auth.decorators import login_required
 # Create your views here.
 
 # class ProductListAPIView(generics.ListAPIView):
@@ -78,7 +79,7 @@ class ProductDetailAPIView(generics.RetrieveUpdateDestroyAPIView):
 # Provides get, put, patch and delete method handlers.
 
 # Extends: GenericAPIView, RetrieveModelMixin, UpdateModelMixin, DestroyModelMixin
-
+@login_required(login_url='login')#this will check if user is loged in or not if user is loged in it will allow it to use this view else it will redirect user to login page and make sure user to login
 @api_view(['GET'])
 def order_list(request):
     orders=Order.objects.prefetch_related('items').all()#Changed to optimise the querry.
