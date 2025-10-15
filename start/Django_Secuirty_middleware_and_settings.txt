@@ -1,0 +1,153 @@
+Links for the docs:
+https://medium.com/django-unleashed/practical-guide-to-security-middleware-in-django-77b213fa944b
+
+
+Django provides a range of security features through middleware and settings that help to protect your application from various attacks and vulnerabilities. Here's an overview of the key security middleware and settings:
+
+### 1. **Middleware Settings**:
+
+Django comes with several security-focused middleware that help prevent common security risks:
+
+* **`SecurityMiddleware`**:
+  This middleware is used to set various security-related headers. It is crucial for setting HTTP headers to enhance security.
+
+  **Key settings**:
+
+  * `SECURE_BROWSER_XSS_FILTER`: When set to `True`, it adds an HTTP header to enable the browser's cross-site scripting filter.
+  * `SECURE_CONTENT_TYPE_NOSNIFF`: When set to `True`, it prevents the browser from interpreting files as a different MIME type.
+  * `SECURE_SSL_REDIRECT`: When set to `True`, this forces HTTPS redirects when the request is made over HTTP.
+  * `SECURE_HSTS_SECONDS`: Set this to a positive integer to specify the number of seconds for HTTP Strict Transport Security (HSTS). This instructs browsers to only access the website over HTTPS for a period.
+  * `SECURE_HSTS_INCLUDE_SUBDOMAINS`: When `True`, it applies HSTS to all subdomains.
+  * `SECURE_HSTS_PRELOAD`: Set this to `True` to submit your site to the HTTP Strict Transport Security preload list (used by browsers).
+  * `SECURE_REFERRER_POLICY`: Configures the Referrer-Policy header to control how much referrer information browsers send with requests.
+
+### 2. **CSRF Protection**:
+
+Django has built-in protection against Cross-Site Request Forgery (CSRF) attacks.
+
+* **`CSRF middleware`**:
+  This middleware checks for CSRF tokens in forms and validates them to ensure requests are coming from trusted sources.
+
+  **Key settings**:
+
+  * `CSRF_COOKIE_SECURE`: When `True`, the CSRF cookie is only sent over HTTPS.
+  * `CSRF_COOKIE_HTTPONLY`: When `True`, the CSRF cookie is inaccessible to JavaScript.
+  * `CSRF_COOKIE_SAMESITE`: This setting helps protect the CSRF cookie from being sent along with cross-site requests.
+  * `CSRF_TRUSTED_ORIGINS`: This setting allows specifying trusted origins for cross-origin requests.
+
+### 3. **Session Security**:
+
+Django also includes settings to ensure secure handling of sessions.
+
+* **Session middleware**:
+  This middleware handles the session, keeping track of user state in the browser.
+
+  **Key settings**:
+
+  * `SESSION_COOKIE_SECURE`: If `True`, session cookies will only be sent over HTTPS.
+  * `SESSION_COOKIE_HTTPONLY`: When set to `True`, the session cookie is inaccessible to JavaScript.
+  * `SESSION_ENGINE`: Determines where sessions are stored (e.g., database, cache, etc.).
+  * `SESSION_EXPIRE_AT_BROWSER_CLOSE`: When `True`, the session will expire when the user closes their browser.
+
+### 4. **X-Content-Type-Options**:
+
+Django can set the `X-Content-Type-Options` header to prevent browsers from interpreting files as a different MIME type.
+
+* **Setting**:
+
+  * `SECURE_CONTENT_TYPE_NOSNIFF`: When `True`, adds `X-Content-Type-Options: nosniff` header.
+
+### 5. **Clickjacking Protection**:
+
+Clickjacking protection is handled by the `X-Frame-Options` header, which prevents your content from being embedded in an iframe on other websites.
+
+* **Setting**:
+
+  * `X_FRAME_OPTIONS`: Controls whether your site can be embedded in an iframe. It can be set to `'DENY'` (disallow embedding) or `'SAMEORIGIN'` (allow embedding from the same domain).
+
+### 6. **Password Management**:
+
+Django has various settings related to password security.
+
+* **Key settings**:
+
+  * `PASSWORD_HASHERS`: A list of algorithms to use for hashing passwords, with `PBKDF2PasswordHasher` as the default.
+  * `PASSWORD_MIN_LENGTH`: Sets the minimum length for passwords.
+  * `AUTH_PASSWORD_VALIDATORS`: A list of validators to enforce rules for password strength (e.g., length, complexity, etc.).
+
+### 7. **Secure Cookies**:
+
+To ensure cookie security, Django allows setting various cookie options.
+
+* **Key settings**:
+
+  * `SESSION_COOKIE_AGE`: The age of session cookies in seconds.
+  * `SESSION_COOKIE_DOMAIN`: The domain to which session cookies are restricted.
+  * `SESSION_EXPIRE_AT_BROWSER_CLOSE`: Whether to expire the session when the user closes the browser.
+
+### 8. **Logging and Error Handling**:
+
+Django has built-in error handling that helps protect against leaks of sensitive data.
+
+* **Key settings**:
+
+  * `DEBUG`: When set to `False`, Django hides detailed error pages, preventing attackers from learning about your app’s structure.
+  * `ALLOWED_HOSTS`: Specifies which host/domain names your Django site can serve. It prevents HTTP Host header attacks.
+
+### 9. **CORS (Cross-Origin Resource Sharing)**:
+
+Django doesn't come with built-in CORS support, but you can add it via the `django-cors-headers` package to control cross-origin requests.
+
+* **Key settings**:
+
+  * `CORS_ALLOWED_ORIGINS`: A list of domains from which cross-origin requests are allowed.
+
+---
+
+### Example `settings.py` configuration for security:
+
+```python
+# Security Middleware
+MIDDLEWARE = [
+    'django.middleware.security.SecurityMiddleware',
+    # other middlewares...
+]
+
+# CSRF settings
+CSRF_COOKIE_SECURE = True
+CSRF_COOKIE_HTTPONLY = True
+CSRF_COOKIE_SAMESITE = 'Strict'
+
+# Session settings
+SESSION_COOKIE_SECURE = True
+SESSION_COOKIE_HTTPONLY = True
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'
+
+# Secure HTTP headers
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+SECURE_SSL_REDIRECT = True
+SECURE_HSTS_SECONDS = 31536000  # 1 year
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_HSTS_PRELOAD = True
+
+# Clickjacking protection
+X_FRAME_OPTIONS = 'DENY'
+
+# Password settings
+AUTH_PASSWORD_VALIDATORS = [
+    # Add validators like MinimumLengthValidator, CommonPasswordValidator, etc.
+]
+
+# Allowed hosts
+ALLOWED_HOSTS = ['yourdomain.com']
+
+# Logging settings
+LOGGING = {
+    # Logging configurations...
+}
+```
+
+### Conclusion:
+
+By enabling and configuring these security features, you can significantly reduce the risk of common attacks like cross-site scripting (XSS), CSRF, session hijacking, and clickjacking. Be sure to follow Django's best practices and keep your settings updated for maximum security.

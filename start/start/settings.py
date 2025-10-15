@@ -228,3 +228,10 @@ SIMPLE_JWT = {
     "SLIDING_TOKEN_OBTAIN_SERIALIZER": "rest_framework_simplejwt.serializers.TokenObtainSlidingSerializer",
     "SLIDING_TOKEN_REFRESH_SERIALIZER": "rest_framework_simplejwt.serializers.TokenRefreshSlidingSerializer",
 }
+# Security configurations
+# SECURE_HSTS_SECONDS = 31536000  # Enable HSTS for 1 year
+# SECURE_HSTS_INCLUDE_SUBDOMAINS = True  # Apply HSTS to subdomains
+# SECURE_HSTS_PRELOAD = True  # Preload HSTS
+# SECURE_SSL_REDIRECT = True  # Redirect HTTP to HTTPS
+# SECURE_BROWSER_XSS_FILTER = True  # Enable XSS filter in supported browsers
+# SECURE_CONTENT_TYPE_NOSNIFF = True  # Prevent MIME type sniffing
