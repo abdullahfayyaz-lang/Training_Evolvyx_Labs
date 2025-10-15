@@ -1,0 +1,171 @@
+---
+
+## 🌐 Django CORS Headers
+
+### 📦 Installation
+
+To allow cross-origin requests (important when your frontend and backend are on different domains):
+
+```bash
+pip install django-cors-headers
+```
+
+### ⚙️ Configuration
+
+Add it to your Django settings:
+
+```python
+INSTALLED_APPS = [
+    ...,
+    "corsheaders",
+]
+
+MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",  # must be at the top
+    "django.middleware.common.CommonMiddleware",
+    ...,
+]
+```
+
+### ✅ Basic Settings
+
+```python
+# Allow all origins (not recommended for production)
+CORS_ALLOW_ALL_ORIGINS = True
+
+# Recommended: Allow specific origins
+CORS_ALLOWED_ORIGINS = [
+    "https://example.com",
+    "https://app.example.com",
+]
+
+# Allow credentials (cookies, auth headers)
+CORS_ALLOW_CREDENTIALS = True
+
+# Allow specific headers
+CORS_ALLOW_HEADERS = [
+    "content-type",
+    "authorization",
+]
+
+# Allow specific HTTP methods
+CORS_ALLOW_METHODS = ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
+```
+
+---
+
+## 🔒 Django Security Headers
+
+These are built into Django and configured in `settings.py` to harden your app against attacks.
+
+### 1. **HTTPS Enforcement**
+
+```python
+SECURE_SSL_REDIRECT = True
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+```
+
+👉 Forces all traffic through HTTPS and secures session/csrf cookies.
+
+---
+
+### 2. **Content Security Policy (CSP)**
+
+Use via [django-csp](https://github.com/mozilla/django-csp):
+
+```bash
+pip install django-csp
+```
+
+```python
+INSTALLED_APPS += ["csp"]
+MIDDLEWARE += ["csp.middleware.CSPMiddleware"]
+
+CSP_DEFAULT_SRC = ("'self'",)
+CSP_SCRIPT_SRC = ("'self'", "https://cdn.jsdelivr.net")
+CSP_STYLE_SRC = ("'self'", "'unsafe-inline'")
+```
+
+👉 Prevents loading of malicious external scripts (mitigates XSS).
+
+---
+
+### 3. **X-Content-Type-Options**
+
+```python
+SECURE_CONTENT_TYPE_NOSNIFF = True
+```
+
+👉 Stops browsers from guessing MIME types (prevents drive-by download attacks).
+
+---
+
+### 4. **X-Frame-Options**
+
+```python
+X_FRAME_OPTIONS = "DENY"
+```
+
+👉 Prevents clickjacking by disallowing your site to load in iframes.
+
+---
+
+### 5. **X-XSS-Protection**
+
+```python
+SECURE_BROWSER_XSS_FILTER = True
+```
+
+👉 Enables the browser’s built-in XSS filtering.
+
+---
+
+### 6. **Referrer Policy**
+
+```python
+SECURE_REFERRER_POLICY = "strict-origin-when-cross-origin"
+```
+
+👉 Controls how much referrer info is sent with requests.
+
+---
+
+### 7. **HSTS (HTTP Strict Transport Security)**
+
+```python
+SECURE_HSTS_SECONDS = 31536000  # 1 year
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_HSTS_PRELOAD = True
+```
+
+👉 Forces browsers to connect only over HTTPS even if the user types `http://`.
+
+---
+
+## 🧩 Combined Example
+
+```python
+MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
+    "django.middleware.security.SecurityMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    ...
+]
+
+# CORS
+CORS_ALLOWED_ORIGINS = ["https://frontend.example.com"]
+
+# Security
+SECURE_SSL_REDIRECT = True
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+SECURE_HSTS_SECONDS = 31536000
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_HSTS_PRELOAD = True
+X_FRAME_OPTIONS = "DENY"
+```
+
+---

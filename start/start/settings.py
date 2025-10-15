@@ -32,7 +32,17 @@ SECRET_KEY = 'django-insecure-!q(o=by^ygzf63^rmxk12y@+4w3n!1fp!sd0#pz%!c2ts*hqs)
 DEBUG = True
 
 ALLOWED_HOSTS = []
-
+CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_HEADERS = [
+    "content-type",
+    "authorization",
+]
+CORS_ALLOWED_ORIGINS = [
+    "https://example.com",##enter your origins
+    "https://app.example.com",
+]
+CORS_ALLOW_METHODS = ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
  # Reading the .env file
 env = environ.Env()
 environ.Env.read_env(os.path.join(BASE_DIR, '.env')) 
@@ -57,16 +67,18 @@ INSTALLED_APPS = [
     'silk',
     'drf_spectacular',
     'django_filters',
+    "corsheaders",
 ]
 
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
     #  'home.middleware.NewMiddleware2',
     # 'home.middleware.new_middleware',
     'silk.middleware.SilkyMiddleware'
