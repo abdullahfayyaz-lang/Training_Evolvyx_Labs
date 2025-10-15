@@ -1,0 +1,50 @@
+Managing environment variables in Django projects is crucial for security, portability, and adaptability, especially when handling sensitive information like database credentials or API keys. Hardcoding these values directly into settings.py is considered a bad practice. Instead, environment variables provide a mechanism to store these values outside the codebase and load them at runtime.
+Two popular Python packages facilitate environment variable management in Django: python-decouple and django-environ. Both offer similar functionalities, allowing you to define environment variables in a .env file and access them within your Django settings.
+Using python-decouple for Environment Variable Management:
+installation.
+Code
+
+    pip install python-decouple
+Create a .env file: In the root directory of your Django project, create a file named .env and add your sensitive data in key-value pairs.
+Code
+
+    SECRET_KEY=your-secret-key
+    DEBUG=False
+    DATABASE_URL=postgres://user:password@localhost:5432/dbname
+Add .env to .gitignore: This is crucial to prevent sensitive data from being committed to version control.
+Code
+
+    .env
+Configure settings.py: Import config from decouple and use it to load environment variables. For non-string values like booleans, use the cast parameter for type conversion.
+Python
+
+    from decouple import config
+
+    SECRET_KEY = config('SECRET_KEY')
+    DEBUG = config('DEBUG', default=False, cast=bool)
+    DATABASE_URL = config('DATABASE_URL')
+Using django-environ for Environment Variable Management:
+installation.
+Code
+
+    pip install django-environ
+Create a .env file: Similar to python-decouple, create a .env file in your project's root and define your variables.
+Add .env to .gitignore: Ensure the .env file is excluded from version control.
+Configure settings.py: Import environ and initialize it, then use it to load environment variables.
+Python
+
+    import environ
+
+    env = environ.Env(
+        # set casting, default value
+        DEBUG=(bool, False)
+    )
+    # reading .env file
+    environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
+
+    SECRET_KEY = env('SECRET_KEY')
+    DEBUG = env('DEBUG')
+    DATABASE_URL = env('DATABASE_URL')
+
+
+
