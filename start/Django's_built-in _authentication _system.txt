@@ -1,0 +1,249 @@
+Sure! Here are more detailed notes on Django’s default authentication system (version 5.2):
+
+---
+
+## 🔐 **Overview of Django's Authentication System**
+
+Django provides a powerful and flexible authentication system that allows you to handle user management, authentication, and authorization within your application. It includes several essential features:
+
+### Core Components:
+
+1. **User Model** - Manages the user data and authentication properties.
+2. **Permissions & Groups** - Provides fine-grained control over what users can access and do.
+3. **Session Management** - Handles user sessions and keeps track of authentication across requests.
+4. **Password Management** - Securely handles user passwords.
+5. **Authentication Views** - Provides default views for login, logout, and password management.
+6. **Authentication Backends** - Pluggable components for handling how authentication works (default is using the database).
+
+---
+
+## 👤 **User Model**
+
+### Default `User` Model:
+
+Django’s built-in `User` model provides common fields for user management. These include:
+
+* **username** (required) – A unique identifier for the user.
+* **password** (hashed) – A hashed version of the user’s password.
+* **email** (optional) – The user’s email address.
+* **first_name** and **last_name** (optional) – The user’s first and last name.
+* **is_active** (default: `True`) – A flag to indicate if the user is active.
+* **is_staff** (default: `False`) – A flag that determines if the user can access the Django admin site.
+* **is_superuser** (default: `False`) – A flag indicating that the user has all permissions.
+
+### Superusers & Staff:
+
+* A **superuser** has all permissions and can manage all aspects of the Django admin site.
+* A **staff member** can access the Django admin site but has limited permissions.
+
+---
+
+## 🛠️ **Creating Users**
+
+### 1. **Creating a Regular User:**
+
+Use the `create_user()` method to create a user and securely store their password:
+
+```python
+from django.contrib.auth.models import User
+user = User.objects.create_user('john', 'john@example.com', 'password123')
+```
+
+This method hashes the password before storing it in the database.
+
+### 2. **Creating a Superuser:**
+
+To create a superuser who can access Django's admin interface, use the `createsuperuser` command:
+
+```bash
+python manage.py createsuperuser --username=admin --email=admin@example.com
+```
+
+### 3. **Updating Password:**
+
+You can update a user’s password securely using `set_password()`:
+
+```python
+user = User.objects.get(username='john')
+user.set_password('newpassword')
+user.save()
+```
+
+**Important:** Changing the password invalidates all existing sessions.
+
+---
+
+## 🔐 **Password Management**
+
+Django provides tools to handle user passwords securely:
+
+1. **Password Hashing**:
+
+   * Passwords are hashed (default is `PBKDF2`) and not stored in plaintext.
+   * You can configure multiple hashing algorithms in `PASSWORD_HASHERS` in `settings.py` (e.g., PBKDF2, Argon2).
+2. **Utilities**:
+
+   * Use `check_password()` to verify if a password matches the stored hash.
+   * Use `make_random_password()` to generate a random password.
+
+**Example of Password Hashing**:
+
+```python
+from django.contrib.auth.models import User
+
+# Password is hashed automatically when calling set_password
+user = User.objects.create_user('jane', 'jane@example.com', 'mysecurepassword')
+user.save()
+
+# Verify password
+user = User.objects.get(username='jane')
+is_correct = user.check_password('mysecurepassword')  # Returns True if the password is correct
+```
+
+---
+
+## 🧩 **Authentication Backends**
+
+### Default Authentication Backend:
+
+Django uses the **ModelBackend** by default, which checks the `User` model to authenticate users.
+
+```python
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+]
+```
+
+### Custom Authentication Backends:
+
+You can add custom authentication backends to integrate with different systems (LDAP, OAuth, etc.). A backend must implement the following methods:
+
+1. **authenticate(request, **credentials)** - Authenticates a user using the provided credentials.
+2. **get_user(user_id)** - Retrieves a user instance by its `user_id`.
+
+### Example Custom Backend:
+
+```python
+from django.contrib.auth.models import User
+
+class MyCustomBackend:
+    def authenticate(self, request, username=None, password=None):
+        try:
+            user = User.objects.get(username=username)
+            if user.check_password(password):
+                return user
+        except User.DoesNotExist:
+            return None
+
+    def get_user(self, user_id):
+        try:
+            return User.objects.get(pk=user_id)
+        except User.DoesNotExist:
+            return None
+```
+
+---
+
+## 🔐 **Session Management**
+
+Django’s authentication system manages user sessions automatically:
+
+1. **Session Middleware** (`django.contrib.sessions.middleware.SessionMiddleware`) is responsible for creating and maintaining user sessions.
+2. **Authentication Middleware** (`django.contrib.auth.middleware.AuthenticationMiddleware`) adds the `user` object to the `request` object for each request.
+
+### Accessing the Current User:
+
+You can access the currently authenticated user via `request.user`:
+
+```python
+# Example: Accessing the current user in a view
+def view(request):
+    user = request.user
+    if user.is_authenticated:
+        return HttpResponse(f'Hello, {user.username}')
+    else:
+        return HttpResponse('Please log in')
+```
+
+---
+
+## 🧑‍💼 **Admin Integration**
+
+Django provides automatic user management in the admin interface:
+
+* Users with `is_staff=True` can access the admin.
+* Superusers (`is_superuser=True`) have full control over the site.
+
+To grant users access to the admin, set `is_staff=True`:
+
+```python
+user.is_staff = True
+user.save()
+```
+
+---
+
+## 🔧 **Customizing Authentication**
+
+### Custom User Models:
+
+Django allows you to create custom user models by subclassing `AbstractBaseUser` and `PermissionsMixin`:
+
+1. **AbstractBaseUser** provides basic authentication functionality.
+2. **PermissionsMixin** provides methods for managing user permissions and groups.
+
+If you want a custom user model, do so at the beginning of your project before running migrations.
+
+### Example:
+
+```python
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
+from django.db import models
+
+class CustomUserManager(BaseUserManager):
+    def create_user(self, email, username, password=None):
+        if not email:
+            raise ValueError("The Email field must be set")
+        email = self.normalize_email(email)
+        user = self.model(email=email, username=username)
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
+
+    def create_superuser(self, email, username, password=None):
+        user = self.create_user(email, username, password)
+        user.is_superuser = True
+        user.is_staff = True
+        user.save(using=self._db)
+        return user
+
+class CustomUser(AbstractBaseUser, PermissionsMixin):
+    email = models.EmailField(unique=True)
+    username = models.CharField(max_length=255, unique=True)
+    is_active = models.BooleanField(default=True)
+    is_staff = models.BooleanField(default=False)
+
+    objects = CustomUserManager()
+
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['username']
+```
+
+### Set the Custom User Model:
+
+In `settings.py`, set `AUTH_USER_MODEL` to the path of your custom user model:
+
+```python
+AUTH_USER_MODEL = 'myapp.CustomUser'
+```
+
+---
+
+## **Session Expiry and Auto-Logout**
+
+* Django provides the `SESSION_COOKIE_AGE` setting to control session expiry (in seconds).
+* Set `SESSION_EXPIRE_AT_BROWSER_CLOSE = True` to make the session expire when the browser is closed.
+
+---
+
+For further details and more advanced topics such as OAuth or JWT integration, check out the official [Django Authentication Documentation](https://docs.djangoproject.com/en/5.2/topics/auth/default/).
