@@ -1,0 +1,53 @@
+🧩 Unit Testing vs Integration Testing in Django
+Aspect	Unit Testing	Integration Testing
+Purpose	Tests individual pieces of code (like a function, model method, or view logic) in isolation.	Tests how multiple components (models, views, templates, middleware, APIs) work together.
+Scope	Small — one unit at a time.	Large — end-to-end workflow or system behavior.
+Dependencies	Uses mocking or stubs to isolate the unit under test.	Uses real components (DB, URLs, templates, middleware).
+Speed	Very fast because it doesn’t rely on full system setup.	Slower, since it often touches the database, templates, and full HTTP flow.
+Failures indicate…	A bug in a single function or method.	A miscommunication or incompatibility between parts of the system.
+Example Tools	unittest, pytest, Django’s SimpleTestCase	Django’s TestCase, TransactionTestCase, Client()
+When to Write	Early — during feature development.	Later — once modules are working individually.
+🧪 Example: Unit Test
+
+Testing a single model method in isolation:
+
+from django.test import SimpleTestCase
+from myapp.models import calculate_discount
+
+class DiscountTest(SimpleTestCase):
+    def test_calculate_discount(self):
+        result = calculate_discount(100, 10)
+        self.assertEqual(result, 90)
+
+
+➡ Focuses only on function logic, not DB or HTTP requests.
+
+🔗 Example: Integration Test
+
+Testing if signup → login → dashboard flow works together:
+
+from django.test import TestCase, Client
+from django.urls import reverse
+
+class UserFlowIntegrationTest(TestCase):
+    def test_signup_and_login_flow(self):
+        client = Client()
+        client.post(reverse('signup'), {
+            'username': 'hasnat',
+            'password1': 'StrongPass123',
+            'password2': 'StrongPass123',
+        })
+        response = client.post(reverse('login'), {
+            'username': 'hasnat',
+            'password': 'StrongPass123',
+        })
+        self.assertRedirects(response, reverse('dashboard'))
+
+
+➡ Covers database, view logic, and redirect behavior together.
+
+💡 In Short
+
+🧱 Unit tests = verify each brick is solid.
+
+🏗️ Integration tests = check if the whole wall stands strong.
