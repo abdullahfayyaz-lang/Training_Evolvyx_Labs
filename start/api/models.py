@@ -22,7 +22,7 @@ class Product(models.Model):
         return self.name
     def clean(self):
         if len(self.name)<2:
-            raise ValidatoionError('Name must be at least 2 characters long')
+            raise ValidationError('Name must be at least 2 characters long')
 
 
 class Order(models.Model):
