@@ -155,35 +155,31 @@ class UserListView(generics.ListAPIView):
 #         form = CustomUserCreationForm()
 #     return render(request, 'signup.html', {'form': form})
 # Signup View-> Using Jwt  authntication
+
 def signup(request):
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST)
+        
         if form.is_valid():
-            # Save the user
             user = form.save()
-
-            # Generate JWT token
+            
+            # Generate JWT tokens (optional for API use)
             refresh = RefreshToken.for_user(user)
             access_token = str(refresh.access_token)
+            
+            # Store tokens in session if needed (optional)
+            request.session['access_token'] = access_token
+            request.session['refresh_token'] = str(refresh)
 
-            # Optionally, return the JWT token in the response or redirect
-            response_data = {
-                'access_token': access_token,
-                'refresh_token': str(refresh),
-            }
-
-            # Redirect to login or homepage with success message
-            messages.success(request, "Account created successfully!")
-
-            # You can either redirect with the token (as done in the login case)
-            return redirect(f'http://127.0.0.1:8000/api/login/')
+            messages.success(request, "✅ Account created successfully! You can now log in.")
+            return redirect('login')  # Use named route instead of hardcoding URL
         else:
-            messages.error(request, "Please correct the error below.")
+            messages.error(request, "Please correct the errors below and try again.")
     else:
         form = CustomUserCreationForm()
-
+    for msg in messages.get_messages(request):
+        print(f"[{msg.level_tag.upper()}] {msg.message}")
     return render(request, 'signup.html', {'form': form})
-
 # Login View-> Using simple django authntication
 # def login_view(request):
 #     if request.method == 'POST':

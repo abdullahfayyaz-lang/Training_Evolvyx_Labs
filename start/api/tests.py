@@ -1,4 +1,4 @@
-from django.test import TestCase
+from django.test import TestCase,Client
 from api.models import Order, User ,Product
 from django.core.exceptions import ValidationError
 from django.urls import reverse
@@ -6,7 +6,12 @@ from rest_framework.test import APIRequestFactory
 from rest_framework.test import APITestCase
 from rest_framework import status
 from django import forms
+from django.contrib.auth import get_user_model
 from .forms import CustomUserCreationForm
+from rest_framework_simplejwt.tokens import RefreshToken
+from django.contrib import messages
+
+
 
 #Test cases are defined here
 #Testing Apis
@@ -121,11 +126,7 @@ class ProductModelTest(TestCase):
 
 
 
-from django.test import TestCase
-from django.contrib.auth import get_user_model
-from .forms import CustomUserCreationForm
 
-User = get_user_model()
 
 class CustomUserCreationFormTest(TestCase):
 
@@ -175,3 +176,130 @@ class CustomUserCreationFormTest(TestCase):
             list(form.fields.keys()),
             ['username', 'email', 'password1', 'password2']
         )
+
+
+
+class LoginViewIntegrationTest(TestCase):
+    def setUp(self):
+        # Create a user for testing
+        self.username = "hasnat"
+        self.password = "StrongPass123!"
+        self.user = User.objects.create_user(
+            username=self.username,
+            password=self.password,
+            email="hasnat@example.com"
+        )
+        self.login_url = reverse('login')  # assuming your view is named 'login'
+
+    def test_login_page_renders_correctly(self):
+        """GET request should render the login template"""
+        response = self.client.get(self.login_url)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'login.html')
+
+    def test_successful_login_redirects_and_creates_token(self):
+        """POST valid credentials should authenticate and redirect"""
+        form_data = {
+            'username': self.username,
+            'password': self.password
+        }
+        response = self.client.post(self.login_url, data=form_data)
+
+        # Expect redirect to /api/orders/
+        self.assertEqual(response.status_code, 302)
+        self.assertIn('/api/orders/', response.url)
+
+        # Ensure user is logged in
+        self.assertTrue(response.wsgi_request.user.is_authenticated)
+
+        # Manually verify token generation logic
+        refresh = RefreshToken.for_user(self.user)
+        self.assertIsNotNone(str(refresh.access_token))
+        self.assertIsNotNone(str(refresh))
+
+    def test_invalid_credentials_show_error_message(self):
+        """POST invalid credentials should re-render form with error message"""
+        form_data = {
+            'username': self.username,
+            'password': 'WrongPassword123!'  # invalid password
+        }
+        response = self.client.post(self.login_url, data=form_data, follow=True)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'login.html')
+        messages_list = list(response.context['messages'])
+        self.assertTrue(
+            any("Invalid credentials." in str(m) for m in messages_list),
+            msg="Expected 'Invalid credentials.' message not found."
+        )
+        # Ensure user is not authenticated
+        self.assertFalse(response.wsgi_request.user.is_authenticated)
+
+class SignupViewIntegrationTest(TestCase):
+    def setUp(self):
+        self.signup_url = reverse('signup')  # ensure your URL name is 'signup'
+
+    def test_signup_page_renders_correctly(self):
+        """GET request should render signup template"""
+        response = self.client.get(self.signup_url)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'signup.html')
+        self.assertIsInstance(response.context['form'], CustomUserCreationForm)
+
+    def test_successful_signup_creates_user_and_redirects(self):
+        """POST valid data should create a new user, generate JWT, and redirect"""
+        form_data = {
+            'username': 'hasnat',
+            'email': 'user@example.com',
+            'password1': 'StrongPass123!',
+            'password2': 'StrongPass123!'
+        }
+
+        response = self.client.post(self.signup_url, data=form_data, follow=True)
+        self.assertRedirects(response, '/api/login/')
+        
+        self.assertTrue(User.objects.filter(username='hasnat').exists())
+
+
+        messages_list = list(response.context['messages'])
+        self.assertTrue(any("Account created successfully!" in str(m) for m in messages_list))
+
+        user = User.objects.get(username='hasnat')
+        refresh = RefreshToken.for_user(user)
+        self.assertIsNotNone(str(refresh.access_token))
+        self.assertIsNotNone(str(refresh))
+
+    def test_signup_invalid_email_domain_shows_error(self):
+        """POST invalid email domain should re-render with error message"""
+        form_data = {
+            'username': 'ali',
+            'email': 'user@gmail.com',  # invalid domain (CustomUserCreationForm rule)
+            'password1': 'StrongPass123!',
+            'password2': 'StrongPass123!'
+        }
+
+        response = self.client.post(self.signup_url, data=form_data)
+
+        # Should remain on signup page
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'signup.html')
+        self.assertContains(response, 'Invalid Email Domain .')
+
+        # No user should be created
+        self.assertFalse(User.objects.filter(username='ali').exists())
+
+    def test_signup_password_mismatch_shows_error(self):
+        """POST with non-matching passwords should fail"""
+        form_data = {
+            'username': 'sana',
+            'email': 'user@example.com',
+            'password1': 'Password123!',
+            'password2': 'WrongPassword!'
+        }
+
+        response = self.client.post(self.signup_url, data=form_data)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'signup.html')
+        messages_list = list(response.context['messages'])
+        self.assertTrue(any("Please correct the errors below and try again." in str(m) for m in messages_list))
+        self.assertFalse(User.objects.filter(username='sana').exists())

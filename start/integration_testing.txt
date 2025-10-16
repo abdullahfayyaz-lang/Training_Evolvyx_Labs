@@ -1,0 +1,74 @@
+In Django, integration testing verifies how multiple components of your application (models, views, middleware, templates, etc.) work together as a whole — rather than just testing individual units. It’s like ensuring all parts of your system collaborate correctly in a real-world environment.
+
+🧩 1. Setup
+
+Django provides a powerful test framework built on unittest. Integration tests usually extend django.test.TestCase or django.test.TransactionTestCase.
+
+from django.test import TestCase, Client
+from django.urls import reverse
+from myapp.models import User
+
+class SignupIntegrationTest(TestCase):
+    def setUp(self):
+        self.client = Client()  # Simulates browser requests
+
+    def test_signup_and_login_flow(self):
+        # Step 1: Sign up a new user
+        response = self.client.post(reverse('signup'), {
+            'username': 'hasnat',
+            'password1': 'strongPass123',
+            'password2': 'strongPass123'
+        })
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, reverse('login'))
+
+        # Step 2: Login using the new credentials
+        response = self.client.post(reverse('login'), {
+            'username': 'hasnat',
+            'password': 'strongPass123'
+        })
+        self.assertEqual(response.status_code, 302)
+        self.assertRedirects(response, reverse('dashboard'))
+
+        # Step 3: Verify logged-in session
+        response = self.client.get(reverse('dashboard'))
+        self.assertContains(response, "Welcome, hasnat")
+
+⚙️ 2. Key Tools for Integration Testing
+Tool	Purpose
+Client()	Simulates a user interacting with your app via HTTP requests.
+reverse()	Resolves URLs dynamically from view names.
+assertRedirects(), assertContains()	Checks for expected outcomes in integrated workflows.
+fixtures	Load test data (JSON/YAML) for larger integration setups.
+TransactionTestCase	Useful when testing DB transactions or rollbacks.
+🧠 3. Integration Test Examples
+✅ Test View + Model + Template Together
+def test_profile_page_shows_user_data(self):
+    user = User.objects.create_user(username="alex", password="pass123")
+    self.client.login(username="alex", password="pass123")
+
+    response = self.client.get(reverse('profile'))
+    self.assertContains(response, "alex")
+
+✅ Test Middleware or Authentication Flow
+def test_login_required_redirect(self):
+    response = self.client.get(reverse('dashboard'))
+    self.assertRedirects(response, f"{reverse('login')}?next=/dashboard/")
+
+🧪 4. Run the Tests
+python manage.py test
+
+
+Or for a specific app:
+
+python manage.py test myapp.tests.test_integration
+
+🚀 5. Pro Tips
+
+Use pytest-django if you prefer Pytest — it offers better fixtures and simpler syntax.
+
+Mock external services (e.g., APIs, emails) using unittest.mock or responses.
+
+Keep integration tests realistic but efficient — avoid too many DB writes or heavy data loads.
+
+Combine unit tests + integration tests + system tests (Selenium/Playwright) for full coverage.
