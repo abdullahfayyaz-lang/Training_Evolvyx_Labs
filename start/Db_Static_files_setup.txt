@@ -1,0 +1,31 @@
+Django Static Files Setup
+Enable staticfiles app: Ensure django.contrib.staticfiles is listed in your INSTALLED_APPS in settings.py.
+Define STATIC_URL: In settings.py, set STATIC_URL to the URL prefix for serving static files, e.g., STATIC_URL = 'static/'.
+Create static directories:
+For app-specific static files (CSS, JS, images), create a static directory inside your app, e.g., your_app/static/your_app/css/style.css.
+For project-wide static files, define STATICFILES_DIRS in settings.py as a list of paths to directories where Django should look for static files, e.g., STATICFILES_DIRS = [BASE_DIR / 'project_static',].
+Use {% static %} tag in templates: Load static files in your templates using {% load static %} and then reference files with {% static 'path/to/file.css' %}.
+Deployment (Production):
+Set STATIC_ROOT in settings.py to the absolute path where collected static files will be stored, e.g., STATIC_ROOT = BASE_DIR / 'staticfiles'.
+Run python manage.py collectstatic to gather all static files into the STATIC_ROOT directory.
+Configure your web server (e.g., Nginx, Apache) to serve files from the STATIC_ROOT directory.
+Django Database Setup
+Configure DATABASES in settings.py: Django projects come with a default SQLite configuration. To use another database (e.g., PostgreSQL, MySQL), modify the DATABASES setting.
+Python
+
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql', # or mysql, sqlite3, oracle
+            'NAME': 'your_database_name',
+            'USER': 'your_database_user',
+            'PASSWORD': 'your_database_password',
+            'HOST': 'localhost', # or your database host
+            'PORT': '', # or your database port
+        }
+    }
+Install database adapter: Install the necessary Python package for your chosen database (e.g., psycopg2 for PostgreSQL, mysqlclient for MySQL).
+Run migrations: After configuring the database and defining your models, apply migrations to create the database tables:
+Code
+
+    python manage.py makemigrations
+    python manage.py migrate
