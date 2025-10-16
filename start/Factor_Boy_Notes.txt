@@ -1,0 +1,126 @@
+Here are clear and structured **notes on Factory Boy** — perfect for quick reference when working in Django 🧠
+
+---
+
+## 🏭 **Factory Boy — Overview**
+
+Factory Boy is a Python library used to **generate fake objects** for testing and development.
+It replaces manually creating model instances with reusable, automated **factories**.
+
+---
+
+## ⚙️ **Installation**
+
+```bash
+pip install factory_boy faker
+```
+
+---
+
+## 🧩 **Basic Concept**
+
+* A **factory** is a class that defines how to build or create an object.
+* In Django, factories typically subclass `factory.django.DjangoModelFactory`.
+* Factories can either **build** (in memory) or **create** (save to DB) objects.
+
+---
+
+## 🧱 **Factory Structure Example**
+
+```python
+import factory
+from faker import Faker
+from .models import Product
+
+fake = Faker()
+
+class ProductFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Product
+
+    name = factory.LazyAttribute(lambda _: fake.word())
+    description = factory.LazyAttribute(lambda _: fake.sentence(nb_words=10))
+    price = factory.LazyAttribute(lambda _: fake.pydecimal(left_digits=4, right_digits=2, positive=True))
+    stock = factory.LazyAttribute(lambda _: fake.random_int(min=1, max=100))
+```
+
+---
+
+## 🧰 **Core Methods**
+
+| Method                    | Description                                  |
+| ------------------------- | -------------------------------------------- |
+| `Factory.create()`        | Creates and saves an object to the database. |
+| `Factory.build()`         | Builds object in memory (not saved).         |
+| `Factory.create_batch(n)` | Creates and saves multiple objects.          |
+| `Factory.build_batch(n)`  | Builds multiple objects (not saved).         |
+
+---
+
+## 🔁 **Using in Django Shell**
+
+```bash
+python manage.py shell
+```
+
+```python
+from api.factory import ProductFactory
+product = ProductFactory()               # creates + saves
+temp_product = ProductFactory.build()    # builds only
+batch = ProductFactory.create_batch(10)  # 10 objects
+```
+
+---
+
+## 🧠 **Factory Field Types**
+
+| Field Type                                | Example       | Description              |
+| ----------------------------------------- | ------------- | ------------------------ |
+| `factory.Faker("word")`                   | Random word   | Uses Faker provider      |
+| `factory.Sequence(lambda n: f"User{n}")`  | Unique values | Increments automatically |
+| `factory.LazyAttribute(lambda _: func())` | Dynamic value | Evaluated lazily         |
+| `factory.SubFactory(OtherFactory)`        | ForeignKey    | Creates related object   |
+
+---
+
+## 🔗 **Example with Relationships**
+
+```python
+class UserFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = User
+    username = factory.Faker("user_name")
+
+class OrderFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Order
+    user = factory.SubFactory(UserFactory)
+    product = factory.SubFactory(ProductFactory)
+```
+
+---
+
+## 🎯 **Best Practices**
+
+* Use `factory.Faker()` for simple fields.
+* Use `LazyAttribute` for logic-based values.
+* Use `SubFactory` for ForeignKey relations.
+* Seed Faker for deterministic results:
+
+  ```python
+  from faker import Faker
+  Faker.seed(1234)
+  ```
+* Keep all factories inside a single `factories.py` or `factory` folder.
+
+---
+
+## 🧪 **Common Use Cases**
+
+✅ Populate the database with fake data
+✅ Create test fixtures for unit tests
+✅ Generate sample records for demos or staging environments
+
+---
+
+Would you like me to add **advanced notes** (e.g., `post_generation`, `Trait`, and `Iterator` for enumerations)?
