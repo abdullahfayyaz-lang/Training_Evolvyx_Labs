@@ -5,6 +5,8 @@ from django.urls import reverse
 from rest_framework.test import APIRequestFactory
 from rest_framework.test import APITestCase
 from rest_framework import status
+from django import forms
+from .forms import CustomUserCreationForm
 
 #Test cases are defined here
 #Testing Apis
@@ -119,7 +121,57 @@ class ProductModelTest(TestCase):
 
 
 
-     
+from django.test import TestCase
+from django.contrib.auth import get_user_model
+from .forms import CustomUserCreationForm
 
+User = get_user_model()
 
+class CustomUserCreationFormTest(TestCase):
 
+    def test_valid_form_with_example_domain(self):
+        """Form should be valid when email ends with @example.com"""
+        form_data = {
+            'username': 'hasnat',
+            'email': 'user@example.com',
+            'password1': 'StrongPass123!',
+            'password2': 'StrongPass123!'
+        }
+        form = CustomUserCreationForm(data=form_data)
+        self.assertTrue(form.is_valid())
+
+    def test_invalid_email_domain(self):
+        """Form should raise ValidationError for non-example.com email"""
+        form_data = {
+            'username': 'ali',
+            'email': 'user@gmail.com',
+            'password1': 'StrongPass123!',
+            'password2': 'StrongPass123!'
+        }
+        form = CustomUserCreationForm(data=form_data)
+        self.assertFalse(form.is_valid())
+        self.assertIn('email', form.errors)
+        self.assertEqual(
+            form.errors['email'][0],
+            'Invalid Email Domain .'
+        )
+
+    def test_password_mismatch(self):
+        """Form should be invalid if passwords do not match"""
+        form_data = {
+            'username': 'kiran',
+            'email': 'user@example.com',
+            'password1': 'Password123!',
+            'password2': 'DifferentPass!'
+        }
+        form = CustomUserCreationForm(data=form_data)
+        self.assertFalse(form.is_valid())
+        self.assertIn('password2', form.errors)
+
+    def test_form_fields_exist(self):
+        """Form should include all specified fields"""
+        form = CustomUserCreationForm()
+        self.assertEqual(
+            list(form.fields.keys()),
+            ['username', 'email', 'password1', 'password2']
+        )
